@@ -76,3 +76,12 @@ Provides a Cookies pane in the Inspector to view details about cookies. Menu bar
 ### Autochrome Integration
 
 Adds a tag to the outgoing user agent to let Burp identify it. Menu bar icon does nothing.
+
+## Copyright and License
+
+Autochrome is copyright 2017, NCC Group, and licensed under the Apache license (see LICENSE.txt) except as noted below:
+
+- The "Cookie Inspector" chrome extension bundled with Autochrome is by [westoque](https://github.com/westoque/cookie_inspector/) / Big Bad Goose LLC, and licensed under the MIT license.
+
+
+
