@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "Settings Resetter",
+  "description": "Provides an easy way to reset cookies or browser settings with the press of a button.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "nuke-history-38x38.png",
+    "default_title": "Reset browsing data",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "browsingData"
+  ]
+}

@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" type="text/css" href="css/core.css" />
+
+  <!-- Libraries -->
+  <script type="text/javascript" src="lib/jquery-1.9.1-min.js"></script>
+  <script type="text/javascript" src="lib/underscore-min.js"></script>
+  <script type="text/javascript" src="lib/backbone-min.js"></script>
+  <script type="text/javascript" src="lib/hogan-min.js"></script>
+
+  <!-- App -->
+  <script type="text/javascript" src="socket.js"></script>
+  <script type="text/javascript" src="ci.js"></script>
+  <script type="text/javascript" src="models/cookie.js"></script>
+  <script type="text/javascript" src="collections/cookies.js"></script>
+  <script type="text/javascript" src="views/header.js"></script>
+  <script type="text/javascript" src="views/content.js"></script>
+  <script type="text/javascript" src="views/footer.js"></script>
+  <script type="text/javascript" src="views/cookie.js"></script>
+  <script type="text/javascript" src="views/resizer.js"></script>
+  <script type="text/javascript" src="views/cookie_form.js"></script>
+  <script type="text/javascript" src="views/context_menu.js"></script>
+
+  <title>Cookie Inspector</title>
+</head>
+<body>
+  <script id="header-tmpl" type="text/template">
+    <table style="width: 100%; height: 100%;">
+      <colgroup span="8">
+        <col style="width: 14.8%;">
+        <col style="width: 40%;">
+        <col style="width: 10%;">
+        <col style="width: 5%;">
+        <col style="width: 5%;">
+        <col style="width: 15%;">
+        <col style="width: 5%;">
+        <col style="width: 5%;">
+        <col style="width: 14px;">
+      </colgroup>
+      <tbody>
+        <tr>
+          <th data-col="name"><div>Name<div></th>
+          <th data-col="value"><div>Value</div></th>
+          <th data-col="domain"><div>Domain</div></th>
+          <th data-col="size"><div>Size</div></th>
+          <th data-col="path"><div>Path</div></th>
+          <th data-col="expires"><div>Expires (GMT)</div></th>
+          <th data-col="httpOnly"><div>HTTP</div></th>
+          <th data-col="secure"><div>Secure</div></th>
+          <th class="corner"></th>
+        </tr>
+      </tbody>
+    </table>
+  </script>
+
+  <script id="content-tmpl" type="text/template">
+      <table style="width: 100%; height: 100%;">
+        <colgroup span="8">
+          <col style="width: 14.8%;">
+          <col style="width: 40%;">
+          <col style="width: 10%;">
+          <col style="width: 5%;">
+          <col style="width: 5%;">
+          <col style="width: 15%;">
+          <col style="width: 5%;">
+          <col style="width: 5%;">
+          <col style="width: 14px;">
+        </colgroup>
+        <tbody>
+          <tr class="filler">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+  </script>
+
+  <script id="cookie-tmpl" type="text/template">
+    <td><div>{{name}}</div></td>
+    <td><div>{{value}}</div></td>
+    <td><div class="domain">{{domain}}</div></td>
+    <td><div class="size">{{size}} B</div></td>
+    <td><div>{{path}}</div></td>
+    <td>
+      {{#session}}
+        <div class="green">Session</div>
+      {{/session}}
+
+      {{^session}}
+        <div>{{expires}}</div>
+      {{/session}}
+    </td>
+    <td>
+      {{#httpOnly}}
+        <div class="green">True</div>
+      {{/httpOnly}}
+    </td>
+    <td>
+      {{#secure}}
+        <div class="green">True</div>
+      {{/secure}}
+    </td>
+    <td>
+    </td>
+  </script>
+
+  <script id="footer-tmpl" type="text/template">
+    <div id="cookies-count-container">
+      <span id="cookies-count">0</span> Cookies Found. Right click on any row to see additional options.
+    </div>
+  </script>
+
+  <script id="cookie-form-tmpl" type="text/template">
+    <form id="cookie-form">
+      <div id="cookie-form-body">
+        <table>
+          <tbody>
+            <tr>
+              <th class="label"><label>Name</label></th>
+              <td class="data"><input type="text" name="name" value="{{name}}" /></td>
+            </tr>
+            <tr>
+              <th class="label"><label>Value</label></th>
+              <td class="data"><textarea>{{value}}</textarea></td>
+            </tr>
+            <tr>
+              <th class="label"><label>Domain</label></th>
+              <td class="data"><input type="text" name="domain" value="{{domain}}" /></td>
+            </tr>
+            <tr>
+              <th class="label"><label>Path</label></th>
+              <td class="data"><input type="text" name="path" value="{{path}}" /></td>
+            </tr>
+            <tr>
+              <th class="label"><label>Expires</label></th>
+              <td class="data">
+                <input value="{{month}}" class="expires-input month" type="number" placeholder="MM" name="month" min="1" max="12" {{#session}}disabled="disabled"{{/session}} required>
+                /
+                <input value="{{day}}" class="expires-input day" type="number" placeholder="DD" name="day" min="1" max="31" {{#session}}disabled="disabled"{{/session}} required>
+                /
+                <input value="{{year}}" class="expires-input year" type="number" placeholder="YYYY" name="year" {{#session}}disabled="disabled"{{/session}} required>
+                -
+                <input value="{{hours}}" class="expires-input hours" type="number" placeholder="HH" name="hours" min="0" max="23" {{#session}}disabled="disabled"{{/session}} required>
+                :
+                <input value="{{minutes}}" class="expires-input minutes" type="number" placeholder="MM" name="minutes" min="0" max="59" {{#session}}disabled="disabled"{{/session}} required>
+                :
+                <input value="{{seconds}}" class="expires-input seconds" type="number" placeholder="SS" name="seconds" min="0" max="59" {{#session}}disabled="disabled"{{/session}} required>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="data checkboxes">
+                <span>
+                  <input id="session-checkbox" type="checkbox" name="session" {{#session}}checked="checked"{{/session}} />
+                  <label for="session-checkbox">Session</label>
+                </span>
+                <span>
+                  <input id="hostOnly-checkbox"type="checkbox" name="hostOnly" {{#hostOnly}}checked="checked"{{/hostOnly}} />
+                  <label for="hostOnly-checkbox">Host Only</label>
+                </span>
+                <span>
+                  <input id="httpOnly-checkbox" type="checkbox" name="httpOnly" {{#httpOnly}}checked="checked"{{/httpOnly}} />
+                  <label for="httpOnly-checkbox">HTTP Only</label>
+                </span>
+                <span>
+                  <input id="secure-checkbox" type="checkbox" name="secure" {{#secure}}checked="checked"{{/secure}} />
+                  <label for="secure-checkbox">Secure</label>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="data buttons">
+                <button id="submit" type="submit">Submit</button>
+                <button id="cancel">Cancel</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </script>
+
+  <script id="context-menu-tmpl" type="text/template">
+    <div id="context-menu-body">
+      <div id="add-new-cookie" class="context-menu-item">Add New Cookie</div>
+      {{#isInRow}}
+        <div class="context-menu-item-separator"></div>
+        <div id="edit-cookie" class="context-menu-item">Edit Cookie</div>
+        <div id="remove-cookie" class="context-menu-item">Remove Cookie</div>
+      {{/isInRow}}
+      <div class="context-menu-item-separator"></div>
+      <div id="remove-all-cookies" class="context-menu-item">Remove All Cookies</div>
+      <div class="context-menu-item-separator"></div>
+      <div id="export-all-cookies" class="context-menu-item">Export All Cookies</div>
+    </div>
+  </script>
+</body>
+</html>
+

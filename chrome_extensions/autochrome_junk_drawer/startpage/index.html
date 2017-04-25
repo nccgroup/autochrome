@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <title>Autochrome</title>
+  </head>
+  <body>
+    <h1>Autochrome</h1>
+
+    <h2>Proxying traffic</h2>
+    <p class="main">
+       All traffic is sent to an HTTP proxy at <strong>localhost:8080</strong>.
+    </p>
+    <p>
+        To change this, rerun the installer with the <span style="font-family: monospace">--proxy-base</span> option to select a different port, or edit the Chromium wrapper script to point at a different host / port.
+    </p>
+
+    <h2>Multiple profiles</h2>
+    <p class="main">
+        Use multiple accounts at the same time! Right-click on the profile name in the top right corner to select a different one.
+    </p>
+    <img src="profiles-macos.png" width="300px">
+    <p>
+        Each profile gets a completely separate cookie state. To get more profiles, run the installer with a list of profiles. Use <span style="font-family: monospace">--list-themes</span> to list the available colors.
+    </p>
+
+    <h2>Helpful extensions</h2>
+    <p class="main">
+        Click on the <img src="clear-history-ext.png"> icon to clear your cookies or history.
+    </p>
+    <p class="main">
+        Right-click on any page to open the Developer Tools and select the "Cookies" tab at the far right to view and edit cookies for a webpage.
+    </p>
+    <p class="main">
+        Your user-agent is tagged with the current profile. Install the Burp extension to automatically mark individual requests in the proxy.
+    </p>
+  </body>
+</html>

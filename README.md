@@ -48,7 +48,22 @@ The command `open ~/Applications/Chromium.app` is one way to launch it on OS X. 
 
 Once you've launched Chromium, open the "Getting Started" bookmark.
 
-## Bundled extensions
+## Chrome extensions
+
+Autochrome comes with several small utility extensions; you can add more in the
+`data/extensions` directory.  Source for the bundled extensions is under
+`chrome_extensions`.  To rebuild them with [`crxmake`](https://github.com/Constellation/crxmake):
+
+(Note: this generates a key for each extension, which autochome hashes to
+generate the extension directory; don't try to reuse a key for more than one
+extension.)
+
+~~~bash
+for dir in chrome_extensions/*; do
+  name="${dir#chrome_extensions/}"
+  crxmake "--pack-extension=$dir" "--extension-output=data/extensions/${name}.crx"
+done
+~~~
 
 ### Settings Resetter
 
@@ -61,3 +76,12 @@ Provides a Cookies pane in the Inspector to view details about cookies. Menu bar
 ### Autochrome Integration
 
 Adds a tag to the outgoing user agent to let Burp identify it. Menu bar icon does nothing.
+
+## Copyright and License
+
+Autochrome is copyright 2017, NCC Group, and licensed under the Apache license (see LICENSE.txt) except as noted below:
+
+- The "Cookie Inspector" chrome extension bundled with Autochrome is by [westoque](https://github.com/westoque/cookie_inspector/) / Big Bad Goose LLC, and licensed under the MIT license.
+
+
+
