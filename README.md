@@ -48,7 +48,23 @@ The command `open ~/Applications/Chromium.app` is one way to launch it on OS X. 
 
 Once you've launched Chromium, open the "Getting Started" bookmark.
 
-## Bundled extensions
+## Chrome extensions
+
+Autochrome comes with several small utility extensions; you can add more in the
+`data/extensions` directory.  Source for the bundled extensions is under
+`chrome_extensions`.  To rebuild them with [`crxmake`](https://github.com/Constellation/crxmake):
+
+~~~bash
+for dir in chrome_extensions/*; do
+  name="${dir#chrome_extensions/}"
+  if [[ -f key.pem ]]; then
+    key_opt='--pack-extension-key=key.pem'
+  else
+    key_opt='--key-output=key.pem'
+  fi
+  crxmake "--pack-extension=$dir" "$key_opt" "--extension-output=data/extensions/${name}.crx"
+done
+~~~
 
 ### Settings Resetter
 
