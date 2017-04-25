@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "Autochrome Integration",
+  "description": "Kitchen sink extension for Autochrome. Includes the start page and User-Agent tagging.",
+  "version": "1.1",
+
+  "background": {
+    "scripts": ["request_handler.js"]
+  },
+  "permissions": [
+    "*://*/*",
+    "bookmarks",
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
+  ]
+}
