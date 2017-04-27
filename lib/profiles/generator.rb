@@ -117,6 +117,10 @@ class ChromeProfileGenerator
       },
       "safebrowsing" => {
         "enabled" => false,
+
+        # just in case; not actually sure what these do
+        extended_reporting_enabled: false,
+        scout_reporting_enabled: false,
       },
       "search" => {
         "suggest_enabled" => false,
