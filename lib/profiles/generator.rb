@@ -75,7 +75,9 @@ class ChromeProfileGenerator
         "show_apps_shortcut" => false,
       },
       "browser" => {
-        "check_default_browser" => false,
+        # 2099 in windows time format
+        default_browser_infobar_last_declined: 157154112000000000
+
         # clears everything that is not a URL in the history or cached files
         "clear_data" => {
           "browsing_history" => false,
