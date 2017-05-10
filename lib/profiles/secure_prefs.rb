@@ -5,8 +5,8 @@ require 'openssl'
 class Prefs
   attr_reader :data
 
-  def initialize
-    @data = {}
+  def initialize(data = {})
+    @data = data
   end
 
   def []= (key,value)
@@ -32,6 +32,8 @@ class SecurePrefs < Prefs
   # I *think* this is just on MacOS (and Windows), not Linux.
   # The HMACed message is three concatenated values: a device uuid, the key
   # path, and the serialized value.
+  
+  # serialized value does some special case processing to strip empty arrays...?
 
   # Called "seed" in the Chromium code base; appears to only be set for Google
   # Chrome builds.
@@ -53,7 +55,8 @@ class SecurePrefs < Prefs
   end
   end
 
-  def initialize(opts)
+  def initialize(data, opts)
+    raise "initial data for secure prefs not supported" unless data.nil? or data.empty?
     super()
     @opts = opts
     @sigs = Prefs.new
@@ -75,7 +78,6 @@ class SecurePrefs < Prefs
 
   def sign(key, value)
     message = uuid + key + serialize(value)
-    puts "siging #{message}"
     hmac = OpenSSL::HMAC.new(HMAC_KEY, OpenSSL::Digest::SHA256.new)
     hmac << message
     hmac.hexdigest.upcase

@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'tmpdir'
 require_relative '../fake_json'
-require_relative '../cr_ext'
+require_relative '../chrome_extension'
 require 'securerandom'
 require 'base64'
 
@@ -19,7 +19,6 @@ IconColors = {
 }
 
 class ChromeProfile
-  BuiltinThemeDirectory = File.expand_path("../../../data/themes", __FILE__)
 
   attr_reader :secure_prefs
   def initialize(opts={})
@@ -34,7 +33,6 @@ class ChromeProfile
 
     # broken for now
     # remove_all_search_engines
-    # set_theme(@dirname)
   end
 
   def profile_entry
@@ -67,10 +65,14 @@ class ChromeProfile
     end
   end
 
+  def set_theme(crx)
+    @prefs['extensions.theme'] = { id: crx.id }
+  end
+
   private
 
   def init_prefs
-    @prefs = {
+    @prefs = Prefs.new({
       "alternate_error_pages" => {
         "enabled" => false,
       },
@@ -134,9 +136,9 @@ class ChromeProfile
       "translate" => {
         "enabled" => false,
       },
-    }
+    })
 
-    @secure_prefs = SecurePrefs.new(@opts)
+    @secure_prefs = SecurePrefs.new(nil, @opts)
   end
 
   def write_preferences
@@ -239,48 +241,24 @@ COMMIT;
     end
   end
 
-  def add_extension(crx)
+  #not used
+  def add_unpacked_extension(crx)
     if !@tmpdir
       raise "No temporary directory"
     end
 
-    key = CrExt.get_crx_key(crx)
-    id = CrExt.calculate_crx_id(key)
-    manifest = CrExt.get_crx_manifest(crx)
+    extract_dir = File.join(@tmpdir, "Extensions", crx.id, crx.version)
+    FileUtils.mkdir_p(extract_dir)
 
-    manifest["key"] = Base64.encode64(key).gsub(/\s/, "")
-    relpath = File.join(id, manifest["version"])
+    # use open3 to suppress unzip warnings for unexpected crx headers
+    Open3.capture3("unzip", "-d", extract_dir, crx.path)
 
-    prefs = {
-    #  "ack_external" => true,
-      "location" => 1, #EXTERNAL_PREF.  currently gets conv to 2, EXTERNAL_REGISTRY?
-      "manifest" => manifest,
-      "path" => relpath,
+    @secure_prefs["extensions.settings.#{crx.id}"] = {
+      manifest: crx.manifest,
+
     }
 
-    @secure_prefs["extensions.settings.#{id}"] = prefs
-
-    extractdir = File.join(@tmpdir, "Extensions", relpath)
-    FileUtils.mkdir_p(extractdir)
-    Open3.popen3("unzip", "-d", extractdir, crx) do |stdin, stdout|
-      stdout.read
-    end
-
-    return id
+    return extract_dir
   end
 
-  def set_theme(name)
-    crxpath = File.join(BuiltinThemeDirectory, File.basename("#{name}.crx"))
-
-    if !File.exists? crxpath
-      return nil
-    end
-
-    id = add_extension(crxpath)
-    @prefs['extensions.theme'] = {
-      id: id,
-      #XXX testing
-      pack: '/Users/rlk/Library/Application Support/Chromium/Red/Extensions/hedecaiaaefmapimbloaahhpdboeacjc/1.1/'
-    }
-  end
 end

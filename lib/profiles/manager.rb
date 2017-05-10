@@ -1,22 +1,26 @@
 require 'fileutils'
 require 'tmpdir'
 require_relative '../fake_json'
-require_relative '../cr_ext'
+require_relative '../chrome_extension'
 
 class ChromeProfileManager
   BuiltinExtensionDirectory = File.expand_path("../../../data/extensions", __FILE__)
+  BuiltinThemeDirectory = File.expand_path("../../../data/themes", __FILE__)
 
   def initialize(opts={})
     @opts = opts
-    @installdir = opts[:data_dir]
+    @install_dir = opts[:data_dir]
     @clobber = opts[:clobber] || opts[:profiles_only]
     @extensiondir = opts[:extension_dir] || BuiltinExtensionDirectory
     @profile_names = opts[:profiles]
   end
 
-  def tmpdir
-    @tmpdir ||= Dir.mktmpdir.tap do |dir|
-      FileUtils.mkdir_p(File.expand_path(dir))
+  def temp_dir(subdir=nil)
+    @temp_root ||= Dir.mktmpdir.tap {|d| FileUtils.mkdir_p(d) }
+    if (subdir)
+      File.join(@temp_root, subdir).tap {|d| FileUtils.mkdir_p(d) }
+    else
+      @temp_root
     end
   end
 
@@ -24,7 +28,7 @@ class ChromeProfileManager
   # happens via the profile directory. The Processor doesn't know
   # about profiles, so it's up to the Profile Manager.
   def current_chromium_pid
-    process = File.expand_path("SingletonLock", @installdir)
+    process = File.expand_path("SingletonLock", @install_dir)
     if File.symlink?(process)
       pid = File.readlink(process).split("-")[1]
       if pid.to_i == 0
@@ -39,47 +43,28 @@ class ChromeProfileManager
     if @profile_names.empty?
       @profile_names = %w(Red Yellow Blue)
     end
-    @profile_names.map! do |name|
-      File.basename(name)
-    end
 
-    @profiles = @profile_names.map do |i|
-      ChromeProfile.new(os_type: @opts[:os_type], dirname: i)
+    @profiles = @profile_names.map do |name|
+      p = ChromeProfile.new(os_type: @opts[:os_type], dirname: name)
+      p.generate
+
+      theme_path = File.join(BuiltinThemeDirectory, "#{name}.crx")
+      unless File.exists? theme_path
+        STDERR.puts "no theme for profile '#{name}' at path '#{theme_path}'"
+      else
+        theme_crx = ChromeExtension.new(theme_path)
+        add_extension(theme_crx, [p])
+        p.set_theme(theme_crx)
+      end
+      p
     end
-    @profiles.each &:generate
   end
 
   def add_extensions
-    exts = Dir[File.join(@extensiondir, "*.crx")].select {|f| File.file?(f)}
-    return if exts.empty?
-
-    extensioninstalldir = File.join(@installdir, "External Extensions")
-    @tmpextdir = File.join(tmpdir, "External Extensions")
-    FileUtils.mkdir_p(@tmpextdir)
-
-    exts.each do |e|
-      puts "[---] Installing extension #{File.basename(e)}"
-
-      key = CrExt.get_crx_key(e)
-      id = CrExt.calculate_crx_id(key)
-      crxname = "#{id}.crx"
-      installedpath = File.join(extensioninstalldir, crxname)
-
-      # generate External Extension file
-      j = {
-        "external_crx" => installedpath,
-        "external_version" => CrExt.get_crx_version(e),
-      }.to_json
-      open(File.join(@tmpextdir, "#{id}.json"), "w") do |f|
-        f.write(j)
-      end
-
-      @profiles.each do |p|
-        p.secure_prefs["extensions.settings.#{id}"] = {ack_external: true}
-      end
-
-      # rename and copy to folder
-      FileUtils.cp(e, File.join(@tmpextdir, crxname))
+    Dir[File.join(@extensiondir, "*.crx")].each do |crx_path|
+      next unless File.file?(crx_path)
+      crx = ChromeExtension.new(crx_path)
+      add_extension(crx, @profiles)
     end
   end
 
@@ -89,30 +74,28 @@ class ChromeProfileManager
     end
 
     @profiles.each do |p|
-      p.install(tmpdir)
+      p.install(temp_dir)
     end
 
     profileobj = generate_local_state_profiles
     setup_local_state(profileobj)
 
     if @clobber
-      if File.exists? @installdir
-        FileUtils.remove_entry_secure(@installdir)
+      if File.exists? @install_dir
+        FileUtils.remove_entry_secure(@install_dir)
       end
     elsif needs_to_clobber?
       raise "Not clobbering existing profile directory"
     end
 
-    FileUtils.move(tmpdir, @installdir)
-    @tmpdir = nil #XXX should prevent reuse of manager instead?
+    FileUtils.move(temp_dir, @install_dir)
 
     puts "[---] Installed user profiles"
   end
 
   def cleanup
-    if @tmpdir && File.exists?(@tmpdir)
-      FileUtils.remove_entry_secure(@tmpdir)
-      @tmpdir = nil
+    if temp_dir && File.exists?(temp_dir)
+      FileUtils.remove_entry_secure(temp_dir)
     end
 
     if @profiles
@@ -124,10 +107,36 @@ class ChromeProfileManager
   end
 
   def needs_to_clobber?
-    File.exists? @installdir
+    File.exists? @install_dir
   end
 
   private
+
+  def add_extension(crx, profiles)
+    puts "[---] Installing extension #{crx.path}"
+
+    working_dir = temp_dir('External Extensions')
+    working_json_path = File.join(working_dir, "#{crx.id}.json")
+    working_crx_path = File.join(working_dir, "#{crx.id}.crx")
+
+    final_dir = File.join(@install_dir, 'External Extensions')
+    final_crx_path = File.join(final_dir, "#{crx.id}.crx")
+
+    # generate External Extension file
+    File.write(working_json_path, JSON.generate({
+      external_crx: final_crx_path,
+      external_version: crx.version
+    }))
+
+    # bypass extension confirmation prompts
+    profiles.each do |p|
+      p.secure_prefs["extensions.settings.#{crx.id}"] = {ack_external: true}
+    end
+
+    # rename and copy to working folder
+    FileUtils.cp(crx.path, working_crx_path)
+  end
+
 
   def generate_local_state_profiles
     if @profiles.size < 1
@@ -155,9 +164,7 @@ class ChromeProfileManager
       },
     }.merge(args)
 
-    f = open(File.join(@tmpdir, "Local State"), "w")
-    f.write(obj.to_json)
-    f.close
+    File.write(File.join(temp_dir, 'Local State'), obj.to_json)
   end
 
   def self.get_default_directory(type)
