@@ -5,6 +5,8 @@ require_relative '../cr_ext'
 require 'securerandom'
 require 'base64'
 
+require_relative 'secure_prefs'
+
 IconColors = {
   "White"  => "chrome://theme/IDR_PROFILE_AVATAR_0",
   "Cyan"   => "chrome://theme/IDR_PROFILE_AVATAR_1",
@@ -16,22 +18,23 @@ IconColors = {
   "Yellow" => "chrome://theme/IDR_PROFILE_AVATAR_7",
 }
 
-class ChromeProfileGenerator
+class ChromeProfile
   BuiltinThemeDirectory = File.expand_path("../../../data/themes", __FILE__)
 
+  attr_reader :secure_prefs
   def initialize(opts={})
+    @opts = opts
     @dirname = opts[:dirname] || SecureRandom.hex
+    init_prefs
   end
 
   def generate
     @tmpdir = Dir.mktmpdir
     FileUtils.mkdir_p(File.expand_path(@tmpdir))
 
-    make_bookmarks
-    remove_all_search_engines
-    make_preferences
-    set_theme(@dirname)
-    write_preferences
+    # broken for now
+    # remove_all_search_engines
+    # set_theme(@dirname)
   end
 
   def profile_entry
@@ -45,6 +48,9 @@ class ChromeProfileGenerator
   end
 
   def install(dir)
+    write_preferences
+    write_bookmarks
+
     if !File.exists?(dir)
       raise "Need valid installation directory"
     end
@@ -63,7 +69,7 @@ class ChromeProfileGenerator
 
   private
 
-  def make_preferences
+  def init_prefs
     @prefs = {
       "alternate_error_pages" => {
         "enabled" => false,
@@ -129,15 +135,21 @@ class ChromeProfileGenerator
         "enabled" => false,
       },
     }
+
+    @secure_prefs = SecurePrefs.new(@opts)
   end
 
   def write_preferences
     f = open(File.join(@tmpdir, "Preferences"), "w")
     f.write @prefs.to_json
     f.close
+
+    f = open(File.join(@tmpdir, "Secure Preferences"), "w")
+    f.write @secure_prefs.to_json
+    f.close
   end
 
-  def make_bookmarks
+  def write_bookmarks
     if !@tmpdir
       raise "No temporary directory"
     end
@@ -240,18 +252,13 @@ COMMIT;
     relpath = File.join(id, manifest["version"])
 
     prefs = {
-      "location" => 1,
-      "path" => relpath,
+    #  "ack_external" => true,
+      "location" => 1, #EXTERNAL_PREF.  currently gets conv to 2, EXTERNAL_REGISTRY?
       "manifest" => manifest,
+      "path" => relpath,
     }
 
-    if !@prefs.include? "extensions"
-      @prefs["extensions"] = {}
-    end
-    if !@prefs["extensions"].include? "settings"
-      @prefs["extensions"]["settings"] = {}
-    end
-    @prefs["extensions"]["settings"][id] = prefs
+    @secure_prefs["extensions.settings.#{id}"] = prefs
 
     extractdir = File.join(@tmpdir, "Extensions", relpath)
     FileUtils.mkdir_p(extractdir)
@@ -270,11 +277,10 @@ COMMIT;
     end
 
     id = add_extension(crxpath)
-    if !@prefs.include? "extensions"
-      @prefs["extensions"] = {}
-    end
-    @prefs["extensions"]["theme"] = {
-      "id" => id,
+    @prefs['extensions.theme'] = {
+      id: id,
+      #XXX testing
+      pack: '/Users/rlk/Library/Application Support/Chromium/Red/Extensions/hedecaiaaefmapimbloaahhpdboeacjc/1.1/'
     }
   end
 end

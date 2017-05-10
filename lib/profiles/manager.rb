@@ -7,10 +7,17 @@ class ChromeProfileManager
   BuiltinExtensionDirectory = File.expand_path("../../../data/extensions", __FILE__)
 
   def initialize(opts={})
+    @opts = opts
     @installdir = opts[:data_dir]
     @clobber = opts[:clobber] || opts[:profiles_only]
     @extensiondir = opts[:extension_dir] || BuiltinExtensionDirectory
     @profile_names = opts[:profiles]
+  end
+
+  def tmpdir
+    @tmpdir ||= Dir.mktmpdir.tap do |dir|
+      FileUtils.mkdir_p(File.expand_path(dir))
+    end
   end
 
   # The reason this is here is that detecting a running Chromium
@@ -37,39 +44,17 @@ class ChromeProfileManager
     end
 
     @profiles = @profile_names.map do |i|
-      ChromeProfileGenerator.new :dirname => i
+      ChromeProfile.new(os_type: @opts[:os_type], dirname: i)
     end
     @profiles.each &:generate
   end
 
-  def bundle
-    if !@profiles
-      raise "No profiles to set up"
-    end
-
-    @tmpdir = Dir.mktmpdir
-    FileUtils.mkdir_p(File.expand_path(@tmpdir))
-
-    @profiles.each do |p|
-      p.install(@tmpdir)
-    end
-    profileobj = generate_local_state_profiles
-    setup_local_state(profileobj)
-  end
-
   def add_extensions
-    if !@tmpdir
-      raise "Nowhere to copy extensions to"
-    end
-
     exts = Dir[File.join(@extensiondir, "*.crx")].select {|f| File.file?(f)}
-
-    if exts.size < 1
-      return
-    end
+    return if exts.empty?
 
     extensioninstalldir = File.join(@installdir, "External Extensions")
-    @tmpextdir = File.join(@tmpdir, "External Extensions")
+    @tmpextdir = File.join(tmpdir, "External Extensions")
     FileUtils.mkdir_p(@tmpextdir)
 
     exts.each do |e|
@@ -89,19 +74,26 @@ class ChromeProfileManager
         f.write(j)
       end
 
+      @profiles.each do |p|
+        p.secure_prefs["extensions.settings.#{id}"] = {ack_external: true}
+      end
+
       # rename and copy to folder
       FileUtils.cp(e, File.join(@tmpextdir, crxname))
     end
   end
 
   def install
-    if !@tmpdir
-      raise "No directory to install profiles to"
-    end
-
     if !@profiles
       raise "No profiles to install"
     end
+
+    @profiles.each do |p|
+      p.install(tmpdir)
+    end
+
+    profileobj = generate_local_state_profiles
+    setup_local_state(profileobj)
 
     if @clobber
       if File.exists? @installdir
@@ -111,8 +103,8 @@ class ChromeProfileManager
       raise "Not clobbering existing profile directory"
     end
 
-    FileUtils.move(@tmpdir, @installdir)
-    @tmpdir = nil
+    FileUtils.move(tmpdir, @installdir)
+    @tmpdir = nil #XXX should prevent reuse of manager instead?
 
     puts "[---] Installed user profiles"
   end

@@ -129,7 +129,6 @@ class AutoChrome
     end
 
     @profiles.generate
-    @profiles.bundle
     @profiles.add_extensions
     @profiles.install
 
