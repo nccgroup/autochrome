@@ -2,7 +2,7 @@ require "digest"
 require "json"
 require "open3"
 
-class ChromeExtension
+class AutoChrome::ChromeExtension
   attr_reader :path, :id, :key, :manifest, :version
   def initialize(crx_path)
     @path = crx_path

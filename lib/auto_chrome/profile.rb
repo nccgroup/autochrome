@@ -1,10 +1,10 @@
 require 'fileutils'
 require 'tmpdir'
-require_relative '../chrome_extension'
 require 'securerandom'
 require 'base64'
 
 require 'auto_chrome/prefs'
+require 'auto_chrome/chrome_extension'
 
 IconColors = {
   "White"  => "chrome://theme/IDR_PROFILE_AVATAR_0",

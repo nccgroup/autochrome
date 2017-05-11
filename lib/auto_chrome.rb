@@ -56,9 +56,9 @@ class AutoChrome
       @processor.install
     end
 
-    @profiles.generate
-    @profiles.add_extensions
-    @profiles.install
+    @profile_builder.generate
+    @profile_builder.add_extensions
+    @profile_builder.install
 
     unless @options[:profiles_only]
       @processor.launch_instructions
@@ -68,7 +68,7 @@ class AutoChrome
     unless @options[:profiles_only]
       @processor.cleanup
     end
-    @profiles.cleanup
+    @profile_builder.cleanup
   end
   
   def current_chromium_pid
@@ -107,7 +107,7 @@ class AutoChrome
       end
     end
 
-    @profiles = ProfileBuilder.new(@options)
+    @profile_builder = ProfileBuilder.new(@options)
 
     # do a quick clobber sanity check
     if !(@options[:clobber] || @options[:profiles_only])
@@ -116,7 +116,7 @@ class AutoChrome
       if @processor.needs_to_clobber?
         err << "[XXX] Application directory already exists."
       end
-      if @profiles.needs_to_clobber?
+      if @profile_builder.needs_to_clobber?
         err << "[XXX] Chromium profile directory already exists."
       end
 
@@ -126,8 +126,7 @@ class AutoChrome
     end
 
     # throw an error if Chrome is currently running
-    pid = current_chromium_pid
-    if pid
+    if pid = current_chromium_pid
       abort "[XXX] Chromium is already running as PID #{pid}.\n\tQuit Chromium before installing."
     end
   end

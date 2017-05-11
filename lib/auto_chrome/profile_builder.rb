@@ -1,8 +1,8 @@
 require 'fileutils'
 require 'tmpdir'
-require_relative '../chrome_extension'
 
 require 'auto_chrome/profile'
+require 'auto_chrome/chrome_extension'
 
 class AutoChrome::ProfileBuilder
   BuiltinExtensionDirectory = File.expand_path("../../../data/extensions", __FILE__)
@@ -39,7 +39,7 @@ class AutoChrome::ProfileBuilder
       unless File.exists? theme_path
         STDERR.puts "no theme for profile '#{name}' at path '#{theme_path}'"
       else
-        theme_crx = ChromeExtension.new(theme_path)
+        theme_crx = AutoChrome::ChromeExtension.new(theme_path)
         add_extension(theme_crx, [p])
         p.set_theme(theme_crx)
       end
@@ -50,7 +50,7 @@ class AutoChrome::ProfileBuilder
   def add_extensions
     Dir[File.join(@extensiondir, "*.crx")].each do |crx_path|
       next unless File.file?(crx_path)
-      crx = ChromeExtension.new(crx_path)
+      crx = AutoChrome::ChromeExtension.new(crx_path)
       add_extension(crx, @profiles)
     end
   end
