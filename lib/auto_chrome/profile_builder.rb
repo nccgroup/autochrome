@@ -25,20 +25,6 @@ class AutoChrome::ProfileBuilder
     end
   end
 
-  # The reason this is here is that detecting a running Chromium
-  # happens via the profile directory. The Processor doesn't know
-  # about profiles, so it's up to the Profile Manager.
-  def current_chromium_pid
-    process = File.expand_path("SingletonLock", @install_dir)
-    if File.symlink?(process)
-      pid = File.readlink(process).split("-")[1]
-      if pid.to_i == 0
-        pid = "unknown"
-      end
-    end
-
-    pid
-  end
 
   def generate
     if @profile_names.empty?

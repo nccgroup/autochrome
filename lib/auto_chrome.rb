@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'optparse'
 require 'pp'
 
 require_relative 'chromecache'
@@ -48,78 +47,6 @@ class AutoChrome
     [crfile, version]
   end
 
-  def parse_options(arg_list)
-    options = { profiles: [] }
-
-    OptionParser.new do |opts|
-      opts.banner = "Usage: #{File.basename($0)} [options] [\"profile 1\" [\"profile 2\" ...]]"
-      opts.separator ""
-
-      opts.on("-t", "--os-type OSTYPE", "Manually set operating system") do |t|
-        options[:os_type] = t
-      end
-
-      opts.on("-V", "--chromium-version VERSION", "Set Chromium version to download") do |v|
-        options[:cr_version] = v.to_i
-      end
-
-      opts.on("-l", "--force-download", "Download Chromium ignoring any cached versions") do |a|
-        options[:force_download] = a
-      end
-
-      opts.on("-n", "--ignore-cache", "Don't cache downloads") do
-        options[:ignore_cache] = true
-      end
-
-      opts.on("-f", "--chrome-archive FILE", "Specify a Chromium archive ZIP file") do |a|
-        options[:chrome_archive] = a
-      end
-
-      opts.on("-P", "--profiles-only", "Install Profiles (and extensions) only; do not (re-)install Chromium") do
-        options[:profiles_only] = true
-      end
-
-      opts.on("-d", "--installation-dir DIR", "Set directory to install Chromium to") do |d|
-        options[:install_dir] = File.expand_path(d)
-      end
-
-      opts.on("-D", "--data-dir DIR", "Set directory to install profiles and extensions") do |d|
-        options[:data_dir] = File.expand_path(d)
-      end
-
-      opts.on("-c", "--clobber", "Delete any existing Chromium installation") do
-        options[:clobber] = true
-      end
-
-      opts.on("-p", "--proxy-base PORT", "Local proxy base port") do |p|
-        options[:proxybase] = p.to_i
-      end
-
-      opts.on("-e", "--extensions EXTDIR", "Directory of bundled extensions") do |e|
-        options[:extension_dir] = File.expand_path(e)
-      end
-
-      opts.on_tail("--list-themes", "List included themes") do
-        pathglob = File.join(ProfileBuilder::BuiltinThemeDirectory, "*.crx")
-        themes = Dir[pathglob].select {|f| File.file?(f)}.map do |f|
-          File.basename(f).gsub("\.crx", "")
-        end
-        puts "Available themes are:"
-        puts themes.join(", ")
-        exit
-      end
-
-      opts.on_tail("-h", "--help", "Show this message") do
-        puts opts
-        exit
-      end
-    # parse arg_list in order, non-destructively, and yield non-options
-    end.order(arg_list) do |arg|
-      options[:profiles] << arg
-    end
-
-    options
-  end
 
   def go
     unless @options[:profiles_only]
@@ -143,16 +70,22 @@ class AutoChrome
     end
     @profiles.cleanup
   end
+  
+  def current_chromium_pid
+    process = File.expand_path("SingletonLock", @options[:data_dir])
+    if File.symlink?(process)
+      pid = File.readlink(process).split("-")[1]
+      if pid.to_i == 0
+        pid = "unknown"
+      end
+    end
+
+    pid
+  end
 
   def initialize(opts)
-    @options = case opts
-    when Hash
-      opts
-    when Array
-      parse_options(opts)
-    else
-      raise "bad opts"
-    end
+    raise "bad opts" unless opts.is_a? Hash
+    @options = opts
 
     # type must be set before doing useful things
     type = @options[:os_type] || FetchCr.guess_type
@@ -193,7 +126,7 @@ class AutoChrome
     end
 
     # throw an error if Chrome is currently running
-    pid = @profiles.current_chromium_pid
+    pid = current_chromium_pid
     if pid
       abort "[XXX] Chromium is already running as PID #{pid}.\n\tQuit Chromium before installing."
     end
