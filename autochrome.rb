@@ -1,13 +1,15 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-if Gem::Version.new('1.9') > Gem::Version.new(RUBY_VERSION)
-  puts "Your version of Ruby (#{RUBY_VERSION}) is too old.
-Please upgrade to the latest version of Ruby."
+if RUBY_VERSION < '1.9'
+  STDERR.puts "Your version of ruby (#{RUBY_VERSION}) is crazy old, and autochrome definitely will not work; sorry."
   exit 1
+elsif
+  RUBY_VERSION < '2.3'
+  STDERR.puts "Your version of ruby (#{RUBY_VERSION}) is a bit old.  Attempting to continue anyway..."
 end
 
-require_relative 'lib/autochrome'
+$: << File.join(File.dirname(__FILE__), 'lib')
+require 'auto_chrome'
 
 a = AutoChrome.new(ARGV)
 a.go

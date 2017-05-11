@@ -1,9 +1,10 @@
 require 'fileutils'
 require 'tmpdir'
-require_relative '../fake_json'
 require_relative '../chrome_extension'
 
-class ChromeProfileManager
+require 'auto_chrome/profile'
+
+class AutoChrome::ProfileBuilder
   BuiltinExtensionDirectory = File.expand_path("../../../data/extensions", __FILE__)
   BuiltinThemeDirectory = File.expand_path("../../../data/themes", __FILE__)
 
@@ -45,7 +46,7 @@ class ChromeProfileManager
     end
 
     @profiles = @profile_names.map do |name|
-      p = ChromeProfile.new(os_type: @opts[:os_type], dirname: name)
+      p = AutoChrome::Profile.new(os_type: @opts[:os_type], dirname: name)
       p.generate
 
       theme_path = File.join(BuiltinThemeDirectory, "#{name}.crx")

@@ -1,11 +1,10 @@
 require 'fileutils'
 require 'tmpdir'
-require_relative '../fake_json'
 require_relative '../chrome_extension'
 require 'securerandom'
 require 'base64'
 
-require_relative 'secure_prefs'
+require 'auto_chrome/prefs'
 
 IconColors = {
   "White"  => "chrome://theme/IDR_PROFILE_AVATAR_0",
@@ -18,7 +17,7 @@ IconColors = {
   "Yellow" => "chrome://theme/IDR_PROFILE_AVATAR_7",
 }
 
-class ChromeProfile
+class AutoChrome::Profile
 
   attr_reader :secure_prefs
   def initialize(opts={})
@@ -72,7 +71,7 @@ class ChromeProfile
   private
 
   def init_prefs
-    @prefs = Prefs.new({
+    @prefs = AutoChrome::Prefs.new({
       "alternate_error_pages" => {
         "enabled" => false,
       },
@@ -138,7 +137,7 @@ class ChromeProfile
       },
     })
 
-    @secure_prefs = SecurePrefs.new(nil, @opts)
+    @secure_prefs = AutoChrome::SecurePrefs.new(nil, @opts)
   end
 
   def write_preferences

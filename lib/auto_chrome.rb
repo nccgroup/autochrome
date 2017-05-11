@@ -5,9 +5,10 @@ require 'pp'
 require_relative 'chromecache'
 require_relative 'fetch_cr'
 require_relative 'processor'
-require_relative 'profiles'
 
 class AutoChrome
+  require 'auto_chrome/profile_builder'
+
   def check_type(type)
     FetchCr::TypeZipMap.key? type
   end
@@ -99,7 +100,7 @@ class AutoChrome
       end
 
       opts.on_tail("--list-themes", "List included themes") do
-        pathglob = File.join(ChromeProfileGenerator::BuiltinThemeDirectory, "*.crx")
+        pathglob = File.join(ProfileBuilder::BuiltinThemeDirectory, "*.crx")
         themes = Dir[pathglob].select {|f| File.file?(f)}.map do |f|
           File.basename(f).gsub("\.crx", "")
         end
@@ -164,7 +165,7 @@ class AutoChrome
       abort "[XXX] OS type needs to be one of #{FetchCr::TypeZipMap.keys.join(" / ")}."
     end
     @options[:os_type] = type
-    @options[:data_dir] ||= ChromeProfileManager.get_default_directory(type)
+    @options[:data_dir] ||= ProfileBuilder.get_default_directory(type)
 
     unless @options[:profiles_only]
       @processor = ChromeProcessor.new_from_type(@options)
@@ -173,7 +174,7 @@ class AutoChrome
       end
     end
 
-    @profiles = ChromeProfileManager.new(@options)
+    @profiles = ProfileBuilder.new(@options)
 
     # do a quick clobber sanity check
     if !(@options[:clobber] || @options[:profiles_only])
