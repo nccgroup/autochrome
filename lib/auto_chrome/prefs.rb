@@ -1,5 +1,6 @@
-require_relative '../fetch_cr'
 require 'openssl'
+
+require 'auto_chrome/fetcher' #for actual OS type (can't gen mac prefs on non-mac)
 
 class AutoChrome
   class Prefs
@@ -42,7 +43,7 @@ class AutoChrome
     def uuid
       @uuid ||= @opts[:uuid] || case @opts[:os_type]
       when 'Mac'
-        if FetchCr.guess_type != 'Mac'
+        if AutoChrome::Fetcher.guess_type != 'Mac'
           raise "can't determine UUID for MacOS secure prefs when not on a Mac"
         end
         s = `ioreg -rd1 -c IOPlatformExpertDevice`

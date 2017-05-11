@@ -2,14 +2,14 @@ require 'fileutils'
 require 'pp'
 
 require_relative 'chromecache'
-require_relative 'fetch_cr'
 require_relative 'processor'
 
 class AutoChrome
   require 'auto_chrome/profile_builder'
+  require 'auto_chrome/fetcher'
 
   def check_type(type)
-    FetchCr::TypeZipMap.key? type
+    Fetcher::TypeZipMap.key? type
   end
 
   def get_chrome(opts)
@@ -32,7 +32,7 @@ class AutoChrome
       end
     end
 
-    c = FetchCr.new(opts[:os_type])
+    c = Fetcher.new(opts[:os_type])
     if version
       crfile = c.download_chromium(version)
     else
@@ -88,14 +88,14 @@ class AutoChrome
     @options = opts
 
     # type must be set before doing useful things
-    type = @options[:os_type] || FetchCr.guess_type
+    type = @options[:os_type] || Fetcher.guess_type
     if !check_type(type)
       if @options[:os_type]
         puts "[XXX] The type specified was #{@options[:os_type]}."
       else
         puts "[XXX] Your operating system couldn't be determined!"
       end
-      abort "[XXX] OS type needs to be one of #{FetchCr::TypeZipMap.keys.join(" / ")}."
+      abort "[XXX] OS type needs to be one of #{Fetcher::TypeZipMap.keys.join(" / ")}."
     end
     @options[:os_type] = type
     @options[:data_dir] ||= ProfileBuilder.get_default_directory(type)
