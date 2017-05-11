@@ -1,2 +1,3 @@
 - Automate crx build process; put keys somewhere out of the way
+- build themes on demand as well
 - replace bundled cookie_inspector with submodule of https://github.com/westoque/cookie_inspector/
