@@ -71,11 +71,17 @@ class AutoChrome::Profile
   private
 
   def init_prefs
-    pref_path = File.join(AutoChrome::DATA_BASE_DIR, 'default_prefs.json')
-    pref_data = JSON.parse(File.read(pref_path).gsub(%r|//.*$|,''))
+    prefs, sprefs = %w(default_prefs.json default_secure_prefs.json).map do |file|
+      path = File.join(AutoChrome::DATA_BASE_DIR, file)
+      data = File.read(path)
+      json = data.gsub(%r|//.*$|,'')
+      JSON.parse(json)
+    end
 
-    @prefs = AutoChrome::Prefs.new(pref_data)
+    @prefs = AutoChrome::Prefs.new(prefs)
+
     @secure_prefs = AutoChrome::SecurePrefs.new(nil, @opts)
+    sprefs.each do |k,v| @secure_prefs[k] = v end
   end
 
   def write_preferences

@@ -69,12 +69,17 @@ class AutoChrome
       @sigs[key] = sign(key, value)
     end
 
+    # alphabetical sorting; see also serialize
     def normalize(value)
       if value.is_a? Hash
         value.sort.map { |k,v| [k, normalize(v)] }.to_h
       else
         value
       end
+    end
+
+    def super_mac
+      sign('', normalize(@sigs.data))
     end
 
     def sign(key, value)
@@ -84,16 +89,24 @@ class AutoChrome
       hmac.hexdigest.upcase
     end
 
-    # Values are serialized as minimal JSON.  We gloss over a couple of details
-    # here:  I'm assuming the values are always in alphabetical order. Floating
-    # point numbers are always formatted with a decimal. Chromium also trims
-    # empty object and array values, which we don't do.  (TODO?)
+
+    # Values are serialized for signing as minimal JSON with some quirks:
+    #
+    # - Chrome recursively ignores empty arrays and objects.  This is not
+    #   implemented, so avoid those.
+    # - Chrome outputs null values as the empty string.  There's code for that,
+    #   but it's untested.
+    # - I'm also unclear on if ordering is always alphabetical; we do that on
+    #   insert (see the call to normalize), which seems to work.
+    #
+    # see ValueAsString in Chromium's pref_hash_calculator.cc
     def serialize(value)
+      return '' if value.nil?
       value.to_json
     end
 
     def to_json(opt={})
-      data.dup.merge({ protection: { macs: @sigs.data } }).to_json(opt)
+      data.dup.merge({ protection: { macs: @sigs.data, super_mac: super_mac } }).to_json(opt)
     end
   end
 end

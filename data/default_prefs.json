@@ -25,6 +25,7 @@
     "default_browser_infobar_last_declined": 157154112000000000
 
   },
+  //TODO this is removed
   "default_search_provider_data": {
     "template_url_data": {
       "keyword": "null",
@@ -32,6 +33,11 @@
       "url": "about:version#{searchTerms}"
     }
   },
+  //TODO wip
+  "default_search_provider": {
+    "synced_guid": "d0641349-f5d8-4a37-8cce-a92b5700b9e7"
+  },
+  //TODO this is clobbered
   "dns_prefetching": {
     "enabled": false
   },
