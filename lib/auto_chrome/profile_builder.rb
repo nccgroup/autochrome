@@ -16,14 +16,6 @@ class AutoChrome::ProfileBuilder
     @profile_names = opts[:profiles]
   end
 
-  def temp_dir(subdir=nil)
-    @temp_root ||= Dir.mktmpdir.tap {|d| FileUtils.mkdir_p(d) }
-    if (subdir)
-      File.join(@temp_root, subdir).tap {|d| FileUtils.mkdir_p(d) }
-    else
-      @temp_root
-    end
-  end
 
 
   def generate
@@ -98,6 +90,15 @@ class AutoChrome::ProfileBuilder
   end
 
   private
+
+  def temp_dir(subdir=nil)
+    @temp_root ||= Dir.mktmpdir.tap {|d| FileUtils.mkdir_p(d) }
+    if (subdir)
+      File.join(@temp_root, subdir).tap {|d| FileUtils.mkdir_p(d) }
+    else
+      @temp_root
+    end
+  end
 
   def add_extension(crx, profiles)
     puts "[---] Installing extension #{crx.path}"

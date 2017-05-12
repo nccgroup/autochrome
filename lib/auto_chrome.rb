@@ -8,6 +8,8 @@ class AutoChrome
   require 'auto_chrome/profile_builder'
   require 'auto_chrome/fetcher'
 
+  DATA_BASE_DIR = File.expand_path("../data", File.dirname(__FILE__))
+
   def check_type(type)
     Fetcher::TypeZipMap.key? type
   end

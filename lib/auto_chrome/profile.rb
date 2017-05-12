@@ -71,72 +71,10 @@ class AutoChrome::Profile
   private
 
   def init_prefs
-    @prefs = AutoChrome::Prefs.new({
-      "alternate_error_pages" => {
-        "enabled" => false,
-      },
-      "autofill" => {
-        "enabled" => false,
-      },
-      "bookmark_bar" => {
-        "show_apps_shortcut" => false,
-      },
-      "browser" => {
-        # 2099 in windows time format
-        default_browser_infobar_last_declined: 157154112000000000,
+    pref_path = File.join(AutoChrome::DATA_BASE_DIR, 'default_prefs.json')
+    pref_data = JSON.parse(File.read(pref_path).gsub(%r|//.*$|,''))
 
-        # clears everything that is not a URL in the history or cached files
-        "clear_data" => {
-          "browsing_history" => false,
-          "cache" => false,
-          "download_history" => false,
-          "form_data" => true,
-          "hosted_apps_data" => true,
-          "passwords" => true,
-          "time_period" => 4,
-        },
-      },
-      "default_search_provider_data" => {
-        "template_url_data" => {
-          "keyword" => "null",
-          "short_name" => "Null",
-          "url" => 'about:version#{searchTerms}',
-        },
-      },
-      "dns_prefetching" => {
-        "enabled" => false,
-      },
-      "download" => {
-        "prompt_for_download" => true,
-      },
-      "ntp" => {
-        # kills Welcome to Chromium and Chrome Web Store links
-        "most_visited_blacklist" => {
-          "c8e0afd1da1d9e29511240861f795a5a" => nil,
-          "eacc8c3ad0b50bd698ef8752d5ee24b6" => nil,
-        },
-      },
-      "profile" => {
-        "password_manager_enabled" => false,
-        "default_content_settings" => {
-          "plugins" => 3, # click-to-play
-        },
-      },
-      "safebrowsing" => {
-        "enabled" => false,
-
-        # just in case; not actually sure what these do
-        extended_reporting_enabled: false,
-        scout_reporting_enabled: false,
-      },
-      "search" => {
-        "suggest_enabled" => false,
-      },
-      "translate" => {
-        "enabled" => false,
-      },
-    })
-
+    @prefs = AutoChrome::Prefs.new(pref_data)
     @secure_prefs = AutoChrome::SecurePrefs.new(nil, @opts)
   end
 
