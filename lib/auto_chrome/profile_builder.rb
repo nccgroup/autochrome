@@ -26,16 +26,20 @@ class AutoChrome::ProfileBuilder
     @profiles = @profile_names.map do |name|
       p = AutoChrome::Profile.new(os_type: @opts[:os_type], dirname: name)
       p.generate
+      p
+    end
 
-      theme_path = File.join(BuiltinThemeDirectory, "#{name}.crx")
+    # do as a second pass b/c we disable each theme in all profiles except
+    # the related one.  (TODO this could be better arranged.)
+    @profiles.each do |p|
+      theme_path = File.join(BuiltinThemeDirectory, "#{p.dirname}.crx")
       unless File.exists? theme_path
-        STDERR.puts "no theme for profile '#{name}' at path '#{theme_path}'"
+        STDERR.puts "no theme for profile '#{p.dirname}' at path '#{theme_path}'"
       else
         theme_crx = AutoChrome::ChromeExtension.new(theme_path)
         add_extension(theme_crx, [p])
         p.set_theme(theme_crx)
       end
-      p
     end
   end
 
@@ -120,7 +124,14 @@ class AutoChrome::ProfileBuilder
     profiles.each do |p|
       p.secure_prefs["extensions.settings.#{crx.id}"] = {ack_external: true}
     end
-
+    #XXX this will break if we call add_extension multiple times with the same
+    #extension and different profiles
+    (@profiles - profiles).each do |p|
+      p.secure_prefs["extensions.settings.#{crx.id}"] = {
+        disable_reasons: 1, # DISABLE_USER_ACTION
+        state: 0
+      }
+    end
     # rename and copy to working folder
     FileUtils.cp(crx.path, working_crx_path)
   end

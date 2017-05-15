@@ -19,7 +19,7 @@ IconColors = {
 
 class AutoChrome::Profile
 
-  attr_reader :secure_prefs
+  attr_reader :secure_prefs, :dirname
   def initialize(opts={})
     @opts = opts
     @dirname = opts[:dirname] || SecureRandom.hex
