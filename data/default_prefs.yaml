@@ -1,4 +1,3 @@
-// This is a json file, but comments like this are stripped before parsing.
 {
   "alternate_error_pages": {
     "enabled": false
@@ -10,7 +9,7 @@
     "show_apps_shortcut": false
   },
   "browser": {
-    // clears everything that is not a URL in the history or cached files
+    # clears everything that is not a URL in the history or cached files
     "clear_data": {
       "browsing_history": false,
       "cache": false,
@@ -21,14 +20,14 @@
       "time_period": 4
     },
 
-    // 2099 in windows time format
+    # 2099 in windows time format
     "default_browser_infobar_last_declined": 157154112000000000
 
   },
   "default_search_provider": {
     "synced_guid": "d0641349-f5d8-4a37-8cce-a92b5700b9e7"
   },
-  //TODO this is clobbered
+  # TODO this is clobbered
   "dns_prefetching": {
     "enabled": false
   },
@@ -36,7 +35,7 @@
     "prompt_for_download": true
   },
   "ntp": {
-    // kills Welcome to Chromium and Chrome Web Store links
+    # kills Welcome to Chromium and Chrome Web Store links
     "most_visited_blacklist": {
       "c8e0afd1da1d9e29511240861f795a5a": null,
       "eacc8c3ad0b50bd698ef8752d5ee24b6": null
@@ -45,13 +44,13 @@
   "profile": {
     "password_manager_enabled": false,
     "default_content_settings": {
-      "plugins": 3 // click-to-play
+      "plugins": 3 # click-to-play
     }
   },
   "safebrowsing": {
     "enabled": false,
 
-    // just in case; not actually sure what these do
+    # just in case; not actually sure what these do
     "extended_reporting_enabled": false,
     "scout_reporting_enabled": false
   },

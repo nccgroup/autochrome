@@ -2,6 +2,7 @@ require 'fileutils'
 require 'tmpdir'
 require 'securerandom'
 require 'base64'
+require 'psych'
 
 require 'auto_chrome/prefs'
 require 'auto_chrome/chrome_extension'
@@ -19,7 +20,7 @@ IconColors = {
 
 class AutoChrome::Profile
 
-  attr_reader :secure_prefs, :dirname
+  attr_reader :prefs, :secure_prefs, :dirname
   def initialize(opts={})
     @opts = opts
     @dirname = opts[:dirname] || SecureRandom.hex
@@ -70,17 +71,17 @@ class AutoChrome::Profile
 
   private
 
-  def init_prefs
-    prefs, sprefs = %w(default_prefs.json default_secure_prefs.json).map do |file|
-      path = File.join(AutoChrome::DATA_BASE_DIR, file)
-      data = File.read(path)
-      json = data.gsub(%r|//.*$|,'')
-      JSON.parse(json)
-    end
+  def load_data(file, opts={})
+    path = File.join(AutoChrome::DATA_BASE_DIR, "#{file}.yaml")
+    data = File.read(path)
+    Psych.safe_load(data)
+  end
 
-    @prefs = AutoChrome::Prefs.new(prefs)
+  def init_prefs
+    @prefs = AutoChrome::Prefs.new( load_data('default_prefs') )
 
     @secure_prefs = AutoChrome::SecurePrefs.new(nil, @opts)
+    sprefs = load_data('default_secure_prefs')
     sprefs.each do |k,v| @secure_prefs[k] = v end
   end
 
@@ -99,44 +100,32 @@ class AutoChrome::Profile
       raise "No temporary directory"
     end
 
-    obj = {
-      "roots" => {
-        "bookmark_bar" => {
-          "children" => [
-            {
-              "name" => "Getting Started",
-              "type" => "url",
-              "url" => "chrome-extension://dlbddhjpellkabmnjehhcngjokkibbcg/startpage/index.html",
-            },
-            {
-              "name" => "Burp History",
-              "type" => "url",
-              "url" => "http://burp/history",
-            },
-            {
-              "name" => "Burp CA Certificate",
-              "type" => "url",
-              "url" => "http://burp/cert",
-            },
-          ],
-          "type" => "folder",
-        },
-        "other" => {
-          "children" => [
-            {
-              "name" => "Autochrome Profile Name",
-              "type" => "url",
-              "url" => "http://#{@dirname.gsub(/[^0-9a-zA-Z]/, "")}",
-            },
-          ],
-          "type" => "folder",
-        },
-      },
-      "version" => 1,
-    }
+    @gs_data_url ||= begin
+      path = File.join(AutoChrome::DATA_BASE_DIR, "getting_started.html")
+      html = File.read(path)
+      b64  = Base64.strict_encode64(html).chomp
+      "data:text/html;base64,#{b64}"
+    end
+
+    bookmarks = load_data('bookmarks')
+    begin
+      bookmarks.dig(* %w(roots bookmark_bar children)).each do |bm|
+        if bm['url'] == '__GETTING_STARTED__' then
+          bm['url'] = @gs_data_url
+        end
+      end
+
+      # Hack for extension to get profile name; TODO.
+      bookmarks.dig(* %w(roots other children)).each do |bm|
+        bm['url']&.gsub! /\A__PROFILE_NAME__\z/, "http://#{@dirname.gsub(/[^0-9a-zA-Z]/, "")}"
+      end
+    rescue => e
+      STDERR.puts "failed to customize bookmarks: #{e}"
+      raise e
+    end
 
     f = open(File.join(@tmpdir, "Bookmarks"), "w")
-    f.write obj.to_json
+    f.write bookmarks.to_json
     f.close
   end
 

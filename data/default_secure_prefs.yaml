@@ -1,6 +1,5 @@
-// This is a json file, but comments like this are stripped before parsing.
-// It should be an object with dot-separated key paths as top-level properties.
-// ** keys in objects under each top-level key must be alphabetically sorted **
+# This should be have a set of dot-separated key paths as top-level properties.
+# ** keys in objects under each top-level key must be alphabetically sorted **
 {
   "default_search_provider_data.template_url_data": {
     "contextual_search_url": "",
@@ -21,9 +20,9 @@
     "url": "about:blank#{searchTerms}",
     "usage_count": 0
   },
-  // if non-empty, this list will override the baked-in default list
+  # if non-empty, this list will override the baked-in default list
   "search_provider_overrides": [ {
-    //all fields required
+    # all fields required
     "encoding" : "utf-8",
     "favicon_url" : "about:blank",
     "id" : 1,

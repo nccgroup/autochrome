@@ -1,0 +1,35 @@
+{
+  "roots": {
+    "bookmark_bar": {
+      "children": [
+        {
+          "name": "Getting Started",
+          "type": "url",
+          "url": "__GETTING_STARTED__"
+        },
+        {
+          "name": "Burp History",
+          "type": "url",
+          "url": "http://burp/history"
+        },
+        {
+          "name": "Burp CA Certificate",
+          "type": "url",
+          "url": "http://burp/cert"
+        }
+      ],
+      "type": "folder"
+    },
+    "other": {
+      "children": [
+        {
+          "name": "Autochrome Profile Name",
+          "type": "url",
+          "url": "__PROFILE_NAME__"
+        }
+      ],
+      "type": "folder"
+    }
+  },
+  "version": 1
+}
