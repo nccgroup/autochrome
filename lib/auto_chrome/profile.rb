@@ -1,9 +1,11 @@
 require 'fileutils'
 require 'tmpdir'
-require_relative '../fake_json'
-require_relative '../cr_ext'
 require 'securerandom'
 require 'base64'
+require 'psych'
+
+require 'auto_chrome/prefs'
+require 'auto_chrome/chrome_extension'
 
 IconColors = {
   "White"  => "chrome://theme/IDR_PROFILE_AVATAR_0",
@@ -16,22 +18,21 @@ IconColors = {
   "Yellow" => "chrome://theme/IDR_PROFILE_AVATAR_7",
 }
 
-class ChromeProfileGenerator
-  BuiltinThemeDirectory = File.expand_path("../../../data/themes", __FILE__)
+class AutoChrome::Profile
 
+  attr_reader :prefs, :secure_prefs, :dirname
   def initialize(opts={})
+    @opts = opts
     @dirname = opts[:dirname] || SecureRandom.hex
+    init_prefs
   end
 
   def generate
     @tmpdir = Dir.mktmpdir
     FileUtils.mkdir_p(File.expand_path(@tmpdir))
 
-    make_bookmarks
-    remove_all_search_engines
-    make_preferences
-    set_theme(@dirname)
-    write_preferences
+    # broken for now
+    # remove_all_search_engines
   end
 
   def profile_entry
@@ -45,6 +46,9 @@ class ChromeProfileGenerator
   end
 
   def install(dir)
+    write_preferences
+    write_bookmarks
+
     if !File.exists?(dir)
       raise "Need valid installation directory"
     end
@@ -61,119 +65,67 @@ class ChromeProfileGenerator
     end
   end
 
+  def set_theme(crx)
+    @prefs['extensions.theme'] = { id: crx.id }
+  end
+
   private
 
-  def make_preferences
-    @prefs = {
-      "alternate_error_pages" => {
-        "enabled" => false,
-      },
-      "autofill" => {
-        "enabled" => false,
-      },
-      "bookmark_bar" => {
-        "show_apps_shortcut" => false,
-      },
-      "browser" => {
-        "check_default_browser" => false,
-        # clears everything that is not a URL in the history or cached files
-        "clear_data" => {
-          "browsing_history" => false,
-          "cache" => false,
-          "download_history" => false,
-          "form_data" => true,
-          "hosted_apps_data" => true,
-          "passwords" => true,
-          "time_period" => 4,
-        },
-      },
-      "default_search_provider_data" => {
-        "template_url_data" => {
-          "keyword" => "null",
-          "short_name" => "Null",
-          "url" => 'about:version#{searchTerms}',
-        },
-      },
-      "dns_prefetching" => {
-        "enabled" => false,
-      },
-      "download" => {
-        "prompt_for_download" => true,
-      },
-      "ntp" => {
-        # kills Welcome to Chromium and Chrome Web Store links
-        "most_visited_blacklist" => {
-          "c8e0afd1da1d9e29511240861f795a5a" => nil,
-          "eacc8c3ad0b50bd698ef8752d5ee24b6" => nil,
-        },
-      },
-      "profile" => {
-        "password_manager_enabled" => false,
-        "default_content_settings" => {
-          "plugins" => 3, # click-to-play
-        },
-      },
-      "safebrowsing" => {
-        "enabled" => false,
-      },
-      "search" => {
-        "suggest_enabled" => false,
-      },
-      "translate" => {
-        "enabled" => false,
-      },
-    }
+  def load_data(file, opts={})
+    path = File.join(AutoChrome::DATA_BASE_DIR, "#{file}.yaml")
+    data = File.read(path)
+    Psych.safe_load(data)
+  end
+
+  def init_prefs
+    @prefs = AutoChrome::Prefs.new( load_data('default_prefs') )
+
+    @secure_prefs = AutoChrome::SecurePrefs.new(nil, @opts)
+    sprefs = load_data('default_secure_prefs')
+    sprefs.each do |k,v| @secure_prefs[k] = v end
   end
 
   def write_preferences
     f = open(File.join(@tmpdir, "Preferences"), "w")
     f.write @prefs.to_json
     f.close
+
+    f = open(File.join(@tmpdir, "Secure Preferences"), "w")
+    f.write @secure_prefs.to_json
+    f.close
   end
 
-  def make_bookmarks
+  def write_bookmarks
     if !@tmpdir
       raise "No temporary directory"
     end
 
-    obj = {
-      "roots" => {
-        "bookmark_bar" => {
-          "children" => [
-            {
-              "name" => "Getting Started",
-              "type" => "url",
-              "url" => "chrome-extension://dlbddhjpellkabmnjehhcngjokkibbcg/startpage/index.html",
-            },
-            {
-              "name" => "Burp History",
-              "type" => "url",
-              "url" => "http://burp/history",
-            },
-            {
-              "name" => "Burp CA Certificate",
-              "type" => "url",
-              "url" => "http://burp/cert",
-            },
-          ],
-          "type" => "folder",
-        },
-        "other" => {
-          "children" => [
-            {
-              "name" => "Autochrome Profile Name",
-              "type" => "url",
-              "url" => "http://#{@dirname.gsub(/[^0-9a-zA-Z]/, "")}",
-            },
-          ],
-          "type" => "folder",
-        },
-      },
-      "version" => 1,
-    }
+    @gs_data_url ||= begin
+      path = File.join(AutoChrome::DATA_BASE_DIR, "getting_started.html")
+      html = File.read(path)
+      b64  = Base64.strict_encode64(html).chomp
+      "data:text/html;base64,#{b64}"
+    end
+
+    bookmarks = load_data('bookmarks')
+    begin
+      bookmarks.dig(* %w(roots bookmark_bar children)).each do |bm|
+        if bm['url'] == '__GETTING_STARTED__' then
+          bm['url'] = @gs_data_url
+        end
+      end
+
+      # Hack for extension to get profile name; TODO.
+      bookmarks.dig(* %w(roots other children)).each do |bm|
+        bm['url']&.gsub! /\A__PROFILE_NAME__\z/, "http://#{@dirname.gsub(/[^0-9a-zA-Z]/, "")}"
+      end
+    rescue => e
+      STDERR.puts "failed to customize bookmarks: #{e}"
+      raise e
+    end
 
     f = open(File.join(@tmpdir, "Bookmarks"), "w")
-    f.write obj.to_json
+    f.write bookmarks.to_json
     f.close
   end
 
@@ -221,54 +173,24 @@ COMMIT;
     end
   end
 
-  def add_extension(crx)
+  #not used
+  def add_unpacked_extension(crx)
     if !@tmpdir
       raise "No temporary directory"
     end
 
-    key = CrExt.get_crx_key(crx)
-    id = CrExt.calculate_crx_id(key)
-    manifest = CrExt.get_crx_manifest(crx)
+    extract_dir = File.join(@tmpdir, "Extensions", crx.id, crx.version)
+    FileUtils.mkdir_p(extract_dir)
 
-    manifest["key"] = Base64.encode64(key).gsub(/\s/, "")
-    relpath = File.join(id, manifest["version"])
+    # use open3 to suppress unzip warnings for unexpected crx headers
+    Open3.capture3("unzip", "-d", extract_dir, crx.path)
 
-    prefs = {
-      "location" => 1,
-      "path" => relpath,
-      "manifest" => manifest,
+    @secure_prefs["extensions.settings.#{crx.id}"] = {
+      manifest: crx.manifest,
+
     }
 
-    if !@prefs.include? "extensions"
-      @prefs["extensions"] = {}
-    end
-    if !@prefs["extensions"].include? "settings"
-      @prefs["extensions"]["settings"] = {}
-    end
-    @prefs["extensions"]["settings"][id] = prefs
-
-    extractdir = File.join(@tmpdir, "Extensions", relpath)
-    FileUtils.mkdir_p(extractdir)
-    Open3.popen3("unzip", "-d", extractdir, crx) do |stdin, stdout|
-      stdout.read
-    end
-
-    return id
+    return extract_dir
   end
 
-  def set_theme(name)
-    crxpath = File.join(BuiltinThemeDirectory, File.basename("#{name}.crx"))
-
-    if !File.exists? crxpath
-      return nil
-    end
-
-    id = add_extension(crxpath)
-    if !@prefs.include? "extensions"
-      @prefs["extensions"] = {}
-    end
-    @prefs["extensions"]["theme"] = {
-      "id" => id,
-    }
-  end
 end

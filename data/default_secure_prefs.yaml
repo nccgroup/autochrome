@@ -1,0 +1,33 @@
+# This should be have a set of dot-separated key paths as top-level properties.
+# ** keys in objects under each top-level key must be alphabetically sorted **
+{
+  "default_search_provider_data.template_url_data": {
+    "contextual_search_url": "",
+    "created_by_policy": false,
+    "date_created": "13139021856678071",
+    "id": "1",
+    "keyword": "x",
+    "last_modified": "13139021856678071",
+    "last_visited": "0",
+    "prepopulate_id": 1,
+    "safe_for_autoreplace": false,
+    "search_terms_replacement_key": "",
+    "search_url_post_params": "",
+    "short_name": "No-op",
+    "suggestions_url": "",
+    "suggestions_url_post_params": "",
+    "synced_guid": "d0641349-f5d8-4a37-8cce-a92b5700b9e7",
+    "url": "about:blank#{searchTerms}",
+    "usage_count": 0
+  },
+  # if non-empty, this list will override the baked-in default list
+  "search_provider_overrides": [ {
+    # all fields required
+    "encoding" : "utf-8",
+    "favicon_url" : "about:blank",
+    "id" : 1,
+    "keyword" : "x",
+    "name" : "NoOp",
+    "search_url" : "about:blank#{searchTerms}"
+  } ]
+}

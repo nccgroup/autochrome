@@ -9,10 +9,10 @@ require 'rbconfig'
 # The following code autodetects the OS type and returns the downloaded
 # binary as a File object:
 #
-#   c = FetchCr.new
+#   c = AutoChrome::Fetcher.new
 #   f = c.download_latest_chromium
 #
-class FetchCr
+class AutoChrome::Fetcher
   # These are the only useful ones available
   TypeZipMap = {
     "Linux_x64" => "chrome-linux.zip",
@@ -95,25 +95,27 @@ class FetchCr
   end
 
   def self.guess_type
-    os = RbConfig::CONFIG['host_os']
+    @guessed_type ||= begin
+      os = RbConfig::CONFIG['host_os']
 
-    case os
-    when /darwin/
-      puts "[???] Detected OS X"
-      "Mac"
-    when /linux/
-      # Chromium only runs on 64-bit Linux, check thias.
-      cpu = RbConfig::CONFIG['host_cpu']
-      if cpu == "x86_64"
-        puts "[???] Detected Linux (x86_64)"
-        "Linux_x64"
+      case os
+      when /darwin/
+        puts "[???] Detected OS X"
+        "Mac"
+      when /linux/
+        # Chromium only runs on 64-bit Linux, check this.
+        cpu = RbConfig::CONFIG['host_cpu']
+        if cpu == "x86_64"
+          puts "[???] Detected Linux (x86_64)"
+          "Linux_x64"
+        else
+          puts "[!!!] Linux builds are only available for x86_64 (you have #{cpu})"
+          nil
+        end
       else
-        puts "[!!!] Linux builds are only available for x86_64 (you have #{cpu})"
+        puts "[!!!] Unable to guess your platform from \"#{os}\""
         nil
       end
-    else
-      puts "[!!!] Unable to guess your platform from \"#{os}\""
-      nil
     end
   end
 
