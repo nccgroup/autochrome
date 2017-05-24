@@ -10,7 +10,6 @@ It includes nifty things like:
 * Automatic proxy configuration! (uses 127.0.0.1:8080)
 * An annoying infobar because it doesn't check TLS certs!
 * Basic integration with Burp if you install the included Burp extension
-* An extension for super easy cookie editing!
 
 Currently, the following OSes are supported:
 
@@ -69,19 +68,10 @@ done
 
 Makes it easy to wipe cookies or all browser history from the menu bar.
 
-### Cookie Monster
-
-Provides a Cookies pane in the Inspector to view details about cookies. Menu bar icon does nothing useful.
-
 ### Autochrome Integration
 
 Adds a tag to the outgoing user agent to let Burp identify it. Menu bar icon does nothing.
 
 ## Copyright and License
 
-Autochrome is copyright 2017, NCC Group, and licensed under the Apache license (see LICENSE.txt) except as noted below:
-
-- The "Cookie Inspector" chrome extension bundled with Autochrome is by [westoque](https://github.com/westoque/cookie_inspector/) / Big Bad Goose LLC, and licensed under the MIT license.
-
-
-
+Autochrome is copyright 2017, NCC Group, and licensed under the Apache license (see LICENSE.txt).
