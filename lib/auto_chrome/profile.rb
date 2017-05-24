@@ -74,7 +74,7 @@ class AutoChrome::Profile
   def load_data(file, opts={})
     path = File.join(AutoChrome::DATA_BASE_DIR, "#{file}.yaml")
     data = File.read(path)
-    Psych.safe_load(data)
+    Psych.load(data)
   end
 
   def init_prefs
@@ -109,15 +109,15 @@ class AutoChrome::Profile
 
     bookmarks = load_data('bookmarks')
     begin
-      bookmarks.dig(* %w(roots bookmark_bar children)).each do |bm|
+      bookmarks["roots"]["bookmark_bar"]["children"].each do |bm|
         if bm['url'] == '__GETTING_STARTED__' then
           bm['url'] = @gs_data_url
         end
       end
 
       # Hack for extension to get profile name; TODO.
-      bookmarks.dig(* %w(roots other children)).each do |bm|
-        bm['url']&.gsub! /\A__PROFILE_NAME__\z/, "http://#{@dirname.gsub(/[^0-9a-zA-Z]/, "")}"
+      bookmarks["roots"]["other"]["children"].each do |bm|
+        bm['url'].gsub! /\A__PROFILE_NAME__\z/, "http://#{@dirname.gsub(/[^0-9a-zA-Z]/, "")}"
       end
     rescue => e
       STDERR.puts "failed to customize bookmarks: #{e}"
