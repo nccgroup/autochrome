@@ -162,6 +162,9 @@ class AutoChrome::ProfileBuilder
           "show-cert-link",
         ],
       },
+      "network_time" => {
+        "network_time_queries_enabled" => false,
+      },
     }.merge(args)
 
     File.write(File.join(temp_dir, 'Local State'), obj.to_json)
