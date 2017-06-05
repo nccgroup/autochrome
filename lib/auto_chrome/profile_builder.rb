@@ -159,6 +159,7 @@ class AutoChrome::ProfileBuilder
         "confirm_to_quit" => true,
         "enabled_labs_experiments" => [
           "enable-brotli@2",
+          "show-cert-link",
         ],
       },
     }.merge(args)
