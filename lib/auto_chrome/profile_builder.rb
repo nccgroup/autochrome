@@ -63,6 +63,8 @@ class AutoChrome::ProfileBuilder
     profileobj = generate_local_state_profiles
     setup_local_state(profileobj)
 
+    stub_avatar_icons
+
     if @clobber
       if File.exists? @install_dir
         FileUtils.remove_entry_secure(@install_dir)
@@ -168,6 +170,26 @@ class AutoChrome::ProfileBuilder
     }.merge(args)
 
     File.write(File.join(temp_dir, 'Local State'), obj.to_json)
+  end
+
+  # Chromium downloads hi-res icons for profiles because they're
+  # not shipped with Chromium by default. If we make zero-length
+  # files with the right name, it just uses the low-res placeholders.
+  def stub_avatar_icons
+    dir = temp_dir('Avatars')
+
+    [
+      "avatar_generic.png",
+      "avatar_generic_aqua.png",
+      "avatar_generic_blue.png",
+      "avatar_generic_green.png",
+      "avatar_generic_orange.png",
+      "avatar_generic_purple.png",
+      "avatar_generic_red.png",
+      "avatar_generic_yellow.png",
+    ].each do |icon|
+      open(File.join(dir, icon), "w")
+    end
   end
 
   def self.get_default_directory(type)
