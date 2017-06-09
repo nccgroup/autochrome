@@ -72,7 +72,7 @@ class AutoChrome
     # alphabetical sorting; see also serialize
     def normalize(value)
       if value.is_a? Hash
-        value.sort.map { |k,v| [k, normalize(v)] }.to_h
+        Hash[value.sort.map { |k,v| [k, normalize(v)] }]
       else
         value
       end

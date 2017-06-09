@@ -34,6 +34,12 @@
   "download": {
     "prompt_for_download": true
   },
+  "local_discovery": {
+    "notifications_enabled": false
+  },
+  "net": {
+    "network_prediction_options": 2
+  },
   "ntp": {
     # kills Welcome to Chromium and Chrome Web Store links
     "most_visited_blacklist": {
