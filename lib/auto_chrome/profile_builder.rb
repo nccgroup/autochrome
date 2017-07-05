@@ -73,7 +73,7 @@ class AutoChrome::ProfileBuilder
       raise "Not clobbering existing profile directory"
     end
 
-    FileUtils.mdkir_p(File.dirname(@install_dir))
+    FileUtils.mkdir_p(File.dirname(@install_dir))
 
     FileUtils.move(temp_dir, @install_dir)
 
