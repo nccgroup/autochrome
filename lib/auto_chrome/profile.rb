@@ -4,8 +4,8 @@ require 'securerandom'
 require 'base64'
 require 'psych'
 
-require 'auto_chrome/prefs'
-require 'auto_chrome/chrome_extension'
+require_relative 'prefs'
+require_relative 'chrome_extension'
 
 IconColors = {
   "White"  => "chrome://theme/IDR_PROFILE_AVATAR_0",

@@ -1,8 +1,8 @@
 require 'fileutils'
 require 'tmpdir'
 
-require 'auto_chrome/profile'
-require 'auto_chrome/chrome_extension'
+require_relative 'profile'
+require_relative 'chrome_extension'
 
 class AutoChrome::ProfileBuilder
   BuiltinExtensionDirectory = File.expand_path("../../../data/extensions", __FILE__)

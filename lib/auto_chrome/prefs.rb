@@ -1,6 +1,6 @@
 require 'openssl'
 
-require 'auto_chrome/fetcher' #for actual OS type (can't gen mac prefs on non-mac)
+require_relative 'fetcher' #for actual OS type (can't gen mac prefs on non-mac)
 
 class AutoChrome
   class Prefs

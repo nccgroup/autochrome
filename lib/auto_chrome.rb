@@ -5,8 +5,8 @@ require_relative 'chromecache'
 require_relative 'processor'
 
 class AutoChrome
-  require 'auto_chrome/profile_builder'
-  require 'auto_chrome/fetcher'
+  require_relative 'auto_chrome/profile_builder'
+  require_relative 'auto_chrome/fetcher'
 
   DATA_BASE_DIR = File.expand_path("../data", File.dirname(__FILE__))
 
