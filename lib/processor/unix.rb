@@ -10,6 +10,7 @@ class ChromeProcessor::UNIX < ChromeProcessor
     @installdir = File.expand_path(self.class::FinalAppName, to)
     @profiledir = opts[:data_dir]
     @clobber = opts[:clobber]
+    @proxyhost = opts[:proxyhost] || 'localhost'
     @proxyport = opts[:proxybase] || 8080
   end
 

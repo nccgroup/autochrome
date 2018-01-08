@@ -53,6 +53,10 @@ def parse_options(arg_list)
       options[:clobber] = true
     end
 
+    opts.on("-p", "--proxy-host HOST", "Proxy host") do |p|
+      options[:proxyhost] = p
+    end
+
     opts.on("-p", "--proxy-base PORT", "Local proxy base port") do |p|
       options[:proxybase] = p.to_i
     end

@@ -47,7 +47,7 @@ opts = [
   "--safebrowsing-disable-auto-update",
   "--safebrowsing-disable-download-protection",
   "--use-mock-keychain",
-  "--proxy-server=localhost:#{@proxyport}",
+  "--proxy-server=#{@proxyhost}:#{@proxyport}",
   "--user-data-dir=#{@profiledir}",
 ]
 opts.push *ARGV
