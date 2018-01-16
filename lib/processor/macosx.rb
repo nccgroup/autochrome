@@ -29,7 +29,7 @@ class ChromeProcessor::MacOSX < ChromeProcessor::UNIX
     framework_glob = File.expand_path(FrameworkBinaryGlob, @extdir)
     framework_fn = Dir.glob(framework_glob).first
     raise "Can't find framework file at #{framework_glob} to patch" unless File.exist? framework_fn
-    framework_bin = File.read(framework_fn)
+    framework_bin = File.read(framework_fn, encoding: 'binary')
     framework_bin.sub! 'ExtensionInstallVerification', 'ExtensionInstallVerificati_1'
     framework_bin.sub! 'ExtensionInstallVerification', 'ExtensionInstallVerificati_2'
     File.write(framework_fn, framework_bin)
