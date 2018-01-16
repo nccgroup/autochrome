@@ -42,7 +42,7 @@ opts = [
   "--disable-web-resources",
   "--safebrowsing-disable-auto-update",
   "--safebrowsing-disable-download-protection",
-  "--proxy-server=localhost:#{@proxyport}",
+  "--proxy-server=#{@proxyhost}:#{@proxyport}",
   "--user-data-dir=#{@profiledir}",
 ]
 opts.push *ARGV
