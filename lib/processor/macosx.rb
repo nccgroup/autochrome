@@ -6,6 +6,7 @@ class ChromeProcessor::MacOSX < ChromeProcessor::UNIX
   FinalAppName = "Chromium.app"
   BinDirectory = "Contents/MacOS"
   AppBinary = "Chromium"
+  FrameworkBinaryGlob = 'Contents/Versions/*/Chromium Framework.framework/Versions/A/Chromium Framework'
   DefaultFilesystemLocation = File.expand_path("~/Applications/")
 
   ChromeLocation = "/Applications/Google Chrome.app"
@@ -23,6 +24,15 @@ class ChromeProcessor::MacOSX < ChromeProcessor::UNIX
 
     # move the Chromium binary
     FileUtils.mv(newbin, origbin)
+
+    # patch out unoverridable flags for webstore-only extensions
+    framework_glob = File.expand_path(FrameworkBinaryGlob, @extdir)
+    framework_fn = Dir.glob(framework_glob).first
+    raise "Can't find framework file at #{framework_glob} to patch" unless File.exist? framework_fn
+    framework_bin = File.read(framework_fn)
+    framework_bin.sub! 'ExtensionInstallVerification', 'ExtensionInstallVerificati_1'
+    framework_bin.sub! 'ExtensionInstallVerification', 'ExtensionInstallVerificati_2'
+    File.write(framework_fn, framework_bin)
 
     # create Ruby shim script
     open(newbin, "w", 0755) do |f|
