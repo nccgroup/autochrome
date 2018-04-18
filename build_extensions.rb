@@ -21,6 +21,11 @@ THEME_IMAGE = 'caution.png'
 THEME_IMAGE_PATH = File.join(DATA_DIR,'theme_source',THEME_IMAGE)
 THEME_OUTPUT_PATH = File.join(DATA_DIR, 'themes')
 
+EXT_SOURCE_DIR = File.join(DATA_DIR, 'extension_source')
+EXT_OUTPUT_DIR = File.join(DATA_DIR, 'extensions')
+
+# Build themes
+
 THEME_COLORS.each do |color_name,hue|
   Dir.mktmpdir do |temp_dir|
     manifest_path = File.join(temp_dir,'manifest.json')
@@ -51,3 +56,14 @@ THEME_COLORS.each do |color_name,hue|
     )
   end
 end
+
+# Build extensions
+
+Dir.each_child(EXT_SOURCE_DIR) do |ext|
+  CrxMake.make(
+    ex_dir: File.join(EXT_SOURCE_DIR, ext),
+    pkey_output: '/dev/null',
+    crx_output: File.join(EXT_OUTPUT_DIR, "#{ext}.crx")
+  )
+end
+

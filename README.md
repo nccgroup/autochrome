@@ -50,8 +50,14 @@ Once you've launched Chromium, open the "Getting Started" bookmark.
 ## Chrome extensions
 
 Autochrome comes with several small utility extensions; you can add more in the
-`data/extensions` directory.  Source for the bundled extensions is under
-`chrome_extensions`.  To rebuild them with [`crxmake`](https://github.com/Constellation/crxmake):
+`data/extensions` directory.
+
+The `build_extensions.rb` script will rebuild all extensions under
+`data/extension_source`, and the standard set of colored themes.  This script
+requires the [`crxmake`](https://github.com/Constellation/crxmake) Ruby gem
+(not included).
+
+Alternately, you can build individual extensions with the `crxmake` command:
 
 (Note: this generates a key for each extension, which autochome hashes to
 generate the extension directory; don't try to reuse a key for more than one
