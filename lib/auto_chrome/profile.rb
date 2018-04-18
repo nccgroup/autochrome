@@ -45,7 +45,7 @@ class AutoChrome::Profile
     [@dirname, hash]
   end
 
-  def install(dir)
+  def install_to(dir)
     write_preferences
     write_bookmarks
 

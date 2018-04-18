@@ -60,6 +60,7 @@ class AutoChrome
 
     @profile_builder.generate
     @profile_builder.add_extensions
+    @profile_builder.add_themes
     @profile_builder.install
 
     unless @options[:profiles_only]

@@ -28,9 +28,11 @@ class AutoChrome::ProfileBuilder
       p.generate
       p
     end
+  end
 
-    # do as a second pass b/c we disable each theme in all profiles except
-    # the related one.  (TODO this could be better arranged.)
+  def add_themes
+    raise 'call "generate" first' unless @profiles
+
     @profiles.each do |p|
       theme_path = File.join(BuiltinThemeDirectory, "#{p.dirname}.crx")
       unless File.exists? theme_path
@@ -57,7 +59,7 @@ class AutoChrome::ProfileBuilder
     end
 
     @profiles.each do |p|
-      p.install(temp_dir)
+      p.install_to(staging_dir)
     end
 
     profileobj = generate_local_state_profiles
@@ -75,14 +77,14 @@ class AutoChrome::ProfileBuilder
 
     FileUtils.mkdir_p(File.dirname(@install_dir))
 
-    FileUtils.move(temp_dir, @install_dir)
+    FileUtils.move(staging_dir, @install_dir)
 
     puts "[---] Installed user profiles"
   end
 
   def cleanup
-    if temp_dir && File.exists?(temp_dir)
-      FileUtils.remove_entry_secure(temp_dir)
+    if staging_dir && File.exists?(staging_dir)
+      FileUtils.remove_entry_secure(staging_dir)
     end
 
     if @profiles
@@ -99,7 +101,7 @@ class AutoChrome::ProfileBuilder
 
   private
 
-  def temp_dir(subdir=nil)
+  def staging_dir(subdir=nil)
     @temp_root ||= Dir.mktmpdir.tap {|d| FileUtils.mkdir_p(d) }
     if (subdir)
       File.join(@temp_root, subdir).tap {|d| FileUtils.mkdir_p(d) }
@@ -111,7 +113,7 @@ class AutoChrome::ProfileBuilder
   def add_extension(crx, profiles)
     puts "[---] Installing extension #{crx.path}"
 
-    working_dir = temp_dir('External Extensions')
+    working_dir = staging_dir('External Extensions')
     working_json_path = File.join(working_dir, "#{crx.id}.json")
     working_crx_path = File.join(working_dir, "#{crx.id}.crx")
 
@@ -171,14 +173,14 @@ class AutoChrome::ProfileBuilder
       },
     }.merge(args)
 
-    File.write(File.join(temp_dir, 'Local State'), obj.to_json)
+    File.write(File.join(staging_dir, 'Local State'), obj.to_json)
   end
 
   # Chromium downloads hi-res icons for profiles because they're
   # not shipped with Chromium by default. If we make zero-length
   # files with the right name, it just uses the low-res placeholders.
   def stub_avatar_icons
-    dir = temp_dir('Avatars')
+    dir = staging_dir('Avatars')
 
     [
       "avatar_generic.png",
