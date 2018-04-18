@@ -24,9 +24,7 @@ class AutoChrome::ProfileBuilder
     end
 
     @profiles = @profile_names.map do |name|
-      p = AutoChrome::Profile.new(os_type: @opts[:os_type], dirname: name)
-      p.generate
-      p
+      AutoChrome::Profile.new(os_type: @opts[:os_type], dirname: name)
     end
   end
 

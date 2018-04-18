@@ -25,14 +25,8 @@ class AutoChrome::Profile
     @opts = opts
     @dirname = opts[:dirname] || SecureRandom.hex
     init_prefs
-  end
 
-  def generate
     @tmpdir = Dir.mktmpdir
-    FileUtils.mkdir_p(File.expand_path(@tmpdir))
-
-    # broken for now
-    # remove_all_search_engines
   end
 
   def profile_entry
