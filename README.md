@@ -13,11 +13,11 @@ It includes nifty things like:
 
 Currently, the following OSes are supported:
 
-* OS X 10.9 (Mavericks) and higher
+* macOS 10.9 (Mavericks) and higher
 * Ubuntu 16.04 (and other XDG-supporting Linuxes)
 
-`ruby` version 2.0 or higher is needed and comes with 10.9 and up.
-`sqlite` and `unzip` are needed for proper functioning. `apt-get install unzip sqlite3` will install the dependencies on Debianesque Linuxes.
+You will need `ruby` version 2.0 or higher and `unzip`.  These are included in
+supported macOS versions.  You may need to `apt install ruby` on Linux.
 
 ## Quickstart
 
