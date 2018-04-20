@@ -8,6 +8,15 @@ class ChromeProcessor::Linux < ChromeProcessor::UNIX
   WrapperScript = "chrome-wrapper"
   DefaultFilesystemLocation = File.expand_path("~/.local/")
 
+  def sanity_check
+    super
+    if `sysctl -n kernel.unprivileged_userns_clone`.chomp != "1"
+      STDERR.puts "[!!!] WARNING: Namespace sandboxes are not available.  Please run the following as root to fix:"
+      STDERR.puts "[!!!]   sysctl kernel.unprivileged_userns_clone=1"
+      STDERR.puts "[!!!] Otherwise, the Chromium sandbox will be disabled."
+    end
+  end
+
   def tweak_install
     if !@extdir
       raise "Need extracted directory"
@@ -45,6 +54,15 @@ opts = [
   "--proxy-server=#{@proxyhost}:#{@proxyport}",
   "--user-data-dir=#{@profiledir}",
 ]
+
+if Process.uid == 0
+  STDERR.puts "WARNING: sandbox disabled due to running as root"
+  opts.push "--no-sandbox"
+elsif `sysctl -n kernel.unprivileged_userns_clone`.chomp != "1"
+  STDERR.puts "WARNING: sandbox disabled due to kernel.unprivileged_userns_clone=0"
+  opts.push "--no-sandbox"
+end
+
 opts.push *ARGV
 exec(File.expand_path("#{origname}", File.dirname(__FILE__)), *opts)
       EOF

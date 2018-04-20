@@ -6,12 +6,21 @@ require 'open3'
 
 class ChromeProcessor::UNIX < ChromeProcessor
   def initialize(opts={})
+    sanity_check
+
     to = File.expand_path(opts[:install_dir] || self.class::DefaultFilesystemLocation)
     @installdir = File.expand_path(self.class::FinalAppName, to)
     @profiledir = opts[:data_dir]
     @clobber = opts[:clobber]
     @proxyhost = opts[:proxyhost] || 'localhost'
     @proxyport = opts[:proxybase] || 8080
+  end
+
+  def sanity_check
+    if Process.uid == 0
+      STDERR.puts "[!!!] WARNING: You are running autochrome as root."
+      STDERR.puts "[!!!] Running Chromium as root will disable the sandbox."
+    end
   end
 
   def unpack(file)

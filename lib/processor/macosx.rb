@@ -11,6 +11,11 @@ class ChromeProcessor::MacOSX < ChromeProcessor::UNIX
 
   ChromeLocation = "/Applications/Google Chrome.app"
 
+  def sanity_check
+    # nothing to do here now
+    super
+  end
+
   def tweak_install
     if !@extdir
       raise "Need extracted directory"
@@ -60,6 +65,12 @@ opts = [
   "--proxy-server=#{@proxyhost}:#{@proxyport}",
   "--user-data-dir=#{@profiledir}",
 ]
+
+if Process.uid == 0
+  STDERR.puts "WARNING: sandbox disabled due to running as root"
+  opts.push "--no-sandbox"
+end
+
 opts.push *ARGV
 exec(File.expand_path("#{origname}", File.dirname(__FILE__)), *opts)
       EOF
