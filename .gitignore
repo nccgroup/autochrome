@@ -1,3 +1,4 @@
 *.pem
 *.class
 burp_extension/src/burp/I*
+*.jar
