@@ -16,6 +16,8 @@ IconColors = {
   "Purple" => "chrome://theme/IDR_PROFILE_AVATAR_5",
   "Red"    => "chrome://theme/IDR_PROFILE_AVATAR_6",
   "Yellow" => "chrome://theme/IDR_PROFILE_AVATAR_7",
+  "Android" => "chrome://theme/IDR_PROFILE_AVATAR_3",
+  "iOS" => "chrome://theme/IDR_PROFILE_AVATAR_0",
 }
 
 class AutoChrome::Profile
