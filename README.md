@@ -10,6 +10,7 @@ It includes nifty things like:
 * Automatic proxy configuration! (uses 127.0.0.1:8080)
 * An annoying infobar because it doesn't check TLS certs!
 * Basic integration with Burp if you install the included Burp extension
+* Two profiles with Android and iOS User Agents
 
 Currently, the following OSes are supported:
 
