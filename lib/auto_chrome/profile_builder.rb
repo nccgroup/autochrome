@@ -20,7 +20,7 @@ class AutoChrome::ProfileBuilder
 
   def generate
     if @profile_names.empty?
-      @profile_names = %w(Red Yellow Blue)
+      @profile_names = %w(Red Yellow Blue Cyan Green Orange Purple White)
     end
 
     @profiles = @profile_names.map do |name|
