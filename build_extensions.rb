@@ -15,10 +15,10 @@ THEME_COLORS = {
   Red: 1.0,
   Yellow: 0.164,
   White: -1.0,
+  Android: -1.0,
+  iOS: 0.99,
 }
 
-THEME_IMAGE = 'caution.png'
-THEME_IMAGE_PATH = File.join(DATA_DIR,'theme_source',THEME_IMAGE)
 THEME_OUTPUT_PATH = File.join(DATA_DIR, 'themes')
 
 EXT_SOURCE_DIR = File.join(DATA_DIR, 'extension_source')
@@ -27,6 +27,17 @@ EXT_OUTPUT_DIR = File.join(DATA_DIR, 'extensions')
 # Build themes
 
 THEME_COLORS.each do |color_name,hue|
+  if "#{color_name}" == 'Android'
+    _THEME_IMAGE = 'caution-android.png'
+  elsif "#{color_name}" == 'iOS'
+    _THEME_IMAGE = 'caution-ios.png'
+  else
+    _THEME_IMAGE = 'caution.png'
+  end
+
+  _THEME_IMAGE_PATH = File.join(DATA_DIR,'theme_source',_THEME_IMAGE)
+      
+
   Dir.mktmpdir do |temp_dir|
     manifest_path = File.join(temp_dir,'manifest.json')
     File.write(manifest_path, JSON.generate({
@@ -35,8 +46,8 @@ THEME_COLORS.each do |color_name,hue|
       manifest_version: 2,
       theme: {
         images: {
-          theme_frame: THEME_IMAGE,
-          theme_frame_inactive: THEME_IMAGE
+          theme_frame: _THEME_IMAGE,
+          theme_frame_inactive: _THEME_IMAGE
         },
         tints: {
           background_tab: [-1.0, -1.0, 0.95],
@@ -48,7 +59,7 @@ THEME_COLORS.each do |color_name,hue|
       }
     }))
 
-    FileUtils.cp(THEME_IMAGE_PATH, temp_dir)
+    FileUtils.cp(_THEME_IMAGE_PATH, temp_dir)
     CrxMake.make(
       ex_dir: temp_dir,
       pkey_output: '/dev/null', #generate key, but don't bother to store it
