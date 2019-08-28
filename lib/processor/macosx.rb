@@ -6,7 +6,7 @@ class ChromeProcessor::MacOSX < ChromeProcessor::UNIX
   FinalAppName = "Chromium.app"
   BinDirectory = "Contents/MacOS"
   AppBinary = "Chromium"
-  FrameworkBinaryGlob = 'Contents/Versions/*/Chromium Framework.framework/Versions/A/Chromium Framework'
+  FrameworkBinaryGlob = 'Contents/Frameworks/Chromium Framework.framework/Versions/Current/Chromium Framework'
   DefaultFilesystemLocation = File.expand_path("~/Applications/")
 
   ChromeLocation = "/Applications/Google Chrome.app"
