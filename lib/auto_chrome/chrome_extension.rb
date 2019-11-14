@@ -8,9 +8,12 @@ class AutoChrome::ChromeExtension
     @path = crx_path
 
     data = File.read(@path, mode: 'rb')
-    sig, ver, keylen, _ = data[0...16].unpack("A4LLL")
-    @key = data[16...16+keylen].unpack("A%d" % [keylen]).first
-    @id = Digest::SHA256.hexdigest(key)[0...32].tr('0-9a-f', 'a-q')
+    key_file = File.dirname(path) + "/" + File.basename(@path, ".crx") + ".pub"
+    if !File.exists?(key_file)
+      raise "No key file found for extension #{path}"
+    end
+    @key = File.read(key_file)
+    @id = Digest::SHA256.hexdigest(key)[0...32].tr('0-9a-f', 'a-p')
 
     # use open3 to suppress unzip warnings for unexpected crx headers
     json, _, _ = Open3.capture3('unzip', '-qc', @path, 'manifest.json')
