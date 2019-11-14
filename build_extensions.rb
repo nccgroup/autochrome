@@ -3,6 +3,9 @@
 require 'json'
 require 'fileutils'
 require 'tmpdir'
+require 'optparse'
+require 'open3'
+require 'digest'
 
 DATA_DIR = File.expand_path("../data", __FILE__)
 
@@ -23,6 +26,42 @@ THEME_OUTPUT_PATH = File.join(DATA_DIR, 'themes')
 
 EXT_SOURCE_DIR = File.join(DATA_DIR, 'extension_source')
 EXT_OUTPUT_DIR = File.join(DATA_DIR, 'extensions')
+
+
+def parse_options(arg_list)
+  options = { path: "~/Applications/Chromium.app/Contents/MacOS/Chromium-orig" }
+
+  OptionParser.new do |opts|
+    opts.banner = "Usage: #{File.basename($0)} [options]"
+    opts.separator ""
+
+    opts.on("-p", "--path Chromium Path", "Path to chromium-orig") do |t|
+      options[:path] = t
+    end
+    opts.on("-h", "--help", "Show this message") do
+      puts opts
+      exit 1
+    end
+  end.order(arg_list)
+
+  options
+end
+
+
+options = parse_options(ARGV)
+
+if !File.exists?(File.expand_path(options[:path]))
+  puts "Chromium at #{options[:path]} does not exist. Specify location with --path"
+  exit 1
+end
+
+def build_extension(options, path, target)
+  system("#{options[:path]} --no-sandbox -no-message-box --pack-extension=#{path}")
+  pubkey, _, _ = Open3.capture3('openssl', 'rsa', '-in', "#{path}.pem", '-pubout', '-outform', 'DER')
+  File.write("#{File.dirname(target)}/#{File.basename(target, ".crx")}.pub", pubkey)
+  FileUtils.mv("#{path}.crx", target)
+  FileUtils.rm("#{path}.pem")
+end
 
 # Build themes
 
@@ -49,17 +88,13 @@ THEME_COLORS.each do |color_name,hue|
     }))
 
     FileUtils.cp(THEME_IMAGE_PATH, temp_dir)
-    system("~/.local/autochrome/chrome-orig --no-sandbox -no-message-box --pack-extension=#{temp_dir}")
-    FileUtils.mv("#{temp_dir}.crx", "#{THEME_OUTPUT_PATH}/#{color_name}.crx")
-    FileUtils.rm("#{temp_dir}.pem")
+    build_extension(options, temp_dir, "#{THEME_OUTPUT_PATH}/#{color_name}.crx")
   end
 end
 
 # Build extensions
-
-Dir.each_child(EXT_SOURCE_DIR) do |ext|
-  system("~/.local/autochrome/chrome-orig --no-sandbox -no-message-box --pack-extension=#{EXT_SOURCE_DIR}/#{ext}")
-  FileUtils.mv("#{EXT_SOURCE_DIR}/#{ext}.crx", EXT_OUTPUT_DIR)
-  FileUtils.rm("#{EXT_SOURCE_DIR}/#{ext}.pem")
+exts = ['autochrome_junk_drawer', 'settingsreset']
+exts.each do |ext|
+  build_extension(options, "#{EXT_SOURCE_DIR}/#{ext}", "#{EXT_OUTPUT_DIR}/#{ext}.crx")
 end
 
