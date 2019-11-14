@@ -27,21 +27,41 @@ function getProfileNameFromBookmark() {
 
 getProfileNameFromBookmark();
 
-document.addEventListener('DOMContentLoaded', function() {
-    chrome.webRequest.onBeforeSendHeaders.addListener(
-        function(details) {
-            if (typeof profile == "string") {
-                var headers = details.requestHeaders;
+var requestFilter = {
+        urls: [ "<all_urls>" ]
+    },
+    // The 'extraInfoSpec' parameter modifies how Chrome calls your
+    // listener function. 'requestHeaders' ensures that the 'details'
+    // object has a key called 'requestHeaders' containing the headers,
+    // and 'blocking' ensures that the object your function returns is
+    // used to overwrite the headers
+    extraInfoSpec = ['requestHeaders','blocking','extraHeaders'],
+    // Chrome will call your listener function in response to every
+    // HTTP request
+    handler = function( details ) {
+        if (typeof profile != "string") {
+            return;
+        }
 
-                for (var i = 0; i < headers.length; i++) {
-                    if (headers[i].name == 'User-Agent') {
-                        headers[i].value += " autochrome/" + profile;
-                    }
-                }
+        var headers = details.requestHeaders,
+            blockingResponse = {};
 
-                return {requestHeaders: headers};
+        // Each header parameter is stored in an array. Since Chrome
+        // makes no guarantee about the contents/order of this array,
+        // you'll have to iterate through it to find for the
+        // 'User-Agent' element
+        for( var i = 0, l = headers.length; i < l; ++i ) {
+            if( headers[i].name == 'User-Agent' ) {
+                headers[i].value += " autochrome/" + profile;
+                break;
             }
-        },
-        {urls: ["*://*/*"]},
-        ['blocking', 'requestHeaders']);
-});
+            // If you want to modify other headers, this is the place to
+            // do it. Either remove the 'break;' statement and add in more
+            // conditionals or use a 'switch' statement on 'headers[i].name'
+        }
+
+        blockingResponse.requestHeaders = headers;
+        return blockingResponse;
+    };
+
+chrome.webRequest.onBeforeSendHeaders.addListener( handler, requestFilter, extraInfoSpec );
