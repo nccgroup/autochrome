@@ -14,7 +14,7 @@ THEME_COLORS = {
   Purple: 0.79,
   Red: 1.0,
   Yellow: 0.164,
-  White: -1.0,
+  White: 0.0,
 }
 
 THEME_IMAGE = 'caution.png'
@@ -40,10 +40,10 @@ THEME_COLORS.each do |color_name,hue|
         },
         "tints": {
           "background_tab": [-1.0, -1.0, 0.95],
-          "frame":                    [hue, -1.0, -1.0],
-          "frame_inactive":           [hue, -1.0, 0.7],
-          "frame_incognito":          [hue, 0.2, -1.0],
-          "frame_incognito_inactive": [hue, 0.2, 0.7]
+          "frame":                    [hue, hue == 0 ? 0 : -1.0, -1.0],
+          "frame_inactive":           [hue, hue == 0 ? 0 : -1.0, 0.7],
+          "frame_incognito":          [hue, hue == 0 ? 0 : -1.0, -1.0],
+          "frame_incognito_inactive": [hue, hue == 0 ? 0 : -1.0, 0.7]
         }
       }
     }))
