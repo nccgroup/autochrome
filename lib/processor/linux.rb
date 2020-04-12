@@ -10,7 +10,13 @@ class ChromeProcessor::Linux < ChromeProcessor::UNIX
 
   def sanity_check
     super
-    if `sysctl -n kernel.unprivileged_userns_clone`.chomp != "1"
+    begin
+      sysctl = `sysctl -n kernel.unprivileged_userns_clone`
+    rescue Errno::ENOENT
+      sysctl = ''
+    end
+
+    if sysctl.chomp != "1"
       STDERR.puts "[!!!] WARNING: Namespace sandboxes are not available.  Please run the following as root to fix:"
       STDERR.puts "[!!!]   sysctl kernel.unprivileged_userns_clone=1"
       STDERR.puts "[!!!] Otherwise, the Chromium sandbox will be disabled."
@@ -55,10 +61,16 @@ opts = [
   "--user-data-dir=#{@profiledir}",
 ]
 
+begin
+  sysctl = `sysctl -n kernel.unprivileged_userns_clone`
+rescue Errno::ENOENT
+  sysctl = ''
+end
+
 if Process.uid == 0
   STDERR.puts "WARNING: sandbox disabled due to running as root"
   opts.push "--no-sandbox"
-elsif `sysctl -n kernel.unprivileged_userns_clone`.chomp != "1"
+elsif sysctl.chomp != "1"
   STDERR.puts "WARNING: sandbox disabled due to kernel.unprivileged_userns_clone=0"
   opts.push "--no-sandbox"
 end
