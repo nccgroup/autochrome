@@ -93,7 +93,7 @@ THEME_COLORS.each do |color_name,hue|
 end
 
 # Build extensions
-exts = ['autochrome_junk_drawer', 'settingsreset']
+exts = Dir.entries(EXT_SOURCE_DIR).delete_if { |d| d =~ /\.\.?/ };
 exts.each do |ext|
   build_extension(options, "#{EXT_SOURCE_DIR}/#{ext}", "#{EXT_OUTPUT_DIR}/#{ext}.crx")
 end
