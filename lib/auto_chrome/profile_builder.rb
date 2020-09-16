@@ -126,7 +126,11 @@ class AutoChrome::ProfileBuilder
 
     # bypass extension confirmation prompts
     profiles.each do |p|
-      p.secure_prefs["extensions.settings.#{crx.id}"] = {ack_external: true}
+      p.secure_prefs["extensions.settings.#{crx.id}"] = {
+          disable_reasons: 0,
+          ack_external: true,
+          state: 1 # this will soon be deprecated, better to use disable_reasons right away
+      }
     end
     #XXX this will break if we call add_extension multiple times with the same
     #extension and different profiles
