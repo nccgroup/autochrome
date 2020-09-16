@@ -14,7 +14,7 @@ class AutoChrome::ChromeExtension
     @manifest = JSON.parse(json, symbolize_names: true)
 
     key_file = File.dirname(path) + "/" + File.basename(@path, ".crx") + ".pub"
-    unless File.exists?(key_file)
+    if !File.exist?(key_file)
       if @manifest.dig(:key) != nil
         puts "[---] Reading key from manifest, this might not work..."
         @key = @manifest[:key]
