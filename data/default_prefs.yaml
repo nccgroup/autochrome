@@ -47,6 +47,9 @@
       "eacc8c3ad0b50bd698ef8752d5ee24b6": null
     }
   },
+  "omnibox": {
+    "prevent_url_elisions": true
+  },
   "profile": {
     "password_manager_enabled": false,
     "default_content_settings": {
