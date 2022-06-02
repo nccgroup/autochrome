@@ -43,7 +43,7 @@ class ChromeProcessor
 
   def self.new_from_type(opts={})
     case opts[:os_type]
-    when "Mac"
+    when "Mac", "Mac_Arm"
       ChromeProcessor::MacOSX.new(opts)
     when "Linux_x64"
       ChromeProcessor::Linux.new(opts)
