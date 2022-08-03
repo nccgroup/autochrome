@@ -1,17 +1,61 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Autochrome Integration",
+  "version": "2.0",
   "description": "Kitchen sink extension for Autochrome. Includes the start page and User-Agent tagging.",
-  "version": "1.1",
-
   "background": {
-    "scripts": ["request_handler.js"]
+    "service_worker": "background.js"
   },
   "permissions": [
-    "*://*/*",
-    "bookmarks",
+    "management",
     "storage",
-    "webRequest",
-    "webRequestBlocking"
-  ]
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_tag_blue",
+        "enabled": false,
+        "path": "useragent_tag_blue.json"
+      },
+      {
+        "id": "ruleset_tag_cyan",
+        "enabled": false,
+        "path": "useragent_tag_cyan.json"
+      },
+      {
+        "id": "ruleset_tag_green",
+        "enabled": false,
+        "path": "useragent_tag_green.json"
+      },
+      {
+        "id": "ruleset_tag_orange",
+        "enabled": false,
+        "path": "useragent_tag_orange.json"
+      },
+      {
+        "id": "ruleset_tag_purple",
+        "enabled": false,
+        "path": "useragent_tag_purple.json"
+      },
+      {
+        "id": "ruleset_tag_red",
+        "enabled": false,
+        "path": "useragent_tag_red.json"
+      },
+      {
+        "id": "ruleset_tag_white",
+        "enabled": false,
+        "path": "useragent_tag_white.json"
+      },
+      {
+        "id": "ruleset_tag_yellow",
+        "enabled": false,
+        "path": "useragent_tag_yellow.json"
+      }
+    ]
+  }
 }
