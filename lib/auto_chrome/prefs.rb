@@ -84,7 +84,9 @@ class AutoChrome
 
     def sign(key, value)
       message = uuid + key + serialize(value)
-      hmac = OpenSSL::HMAC.new(HMAC_KEY, OpenSSL::Digest::SHA256.new)
+      #hmac = OpenSSL::HMAC.new(HMAC_KEY, OpenSSL::Digest::SHA256.new)
+      digest = OpenSSL::Digest.new('SHA256')
+      hmac = OpenSSL::HMAC.new(message,digest)    
       hmac << message
       hmac.hexdigest.upcase
     end
