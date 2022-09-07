@@ -39,7 +39,7 @@ Use the `-h` flag to see all of the options.
 
 The "versions" used with this tool are Chromium revisions. You can get a list of the last known good versions [here](http://chromium-status.appspot.com/revisions) (use the six-digit number after `refs/heads/master`), and you can find out what revision a given build of Chrome uses [here](http://omahaproxy.appspot.com/).
 
-##dwalter0 Updates
+## dwalter0 Updates
 The version in this repository will install on kali linux 2022.3 with the above instructions. The extension for user agent tagging in the original seemed broken to me so I made a slight change. Once you've installed autochrome, delete the Autochrome Integration extension, then enter developer mode and load the unpacked extension folder autochrome/data/extension_source/autochrome_junk_drawer. Next you'll have to open autochrome a bunch of times and open each profile and create a bookmark for each. The title for all of the bookmarks needs to be the string "Autochrome Profile Name" and the url should be the color of the profile, don't worry if it fills in http:// before hand. It might look like http://red and that's fine. It needs the bookmarks for the browser extension to differentiate between the profiles.
 
 ## Running
