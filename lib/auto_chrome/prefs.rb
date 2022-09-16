@@ -42,8 +42,8 @@ class AutoChrome
 
     def uuid
       @uuid ||= @opts[:uuid] || case @opts[:os_type]
-      when 'Mac'
-        if AutoChrome::Fetcher.guess_type != 'Mac'
+      when 'Mac', 'Mac_Arm'
+        if AutoChrome::Fetcher.guess_type != 'Mac' && AutoChrome::Fetcher.guess_type != 'Mac_Arm'
           raise "can't determine UUID for MacOS secure prefs when not on a Mac"
         end
         s = `ioreg -rd1 -c IOPlatformExpertDevice`
