@@ -196,7 +196,7 @@ class AutoChrome::ProfileBuilder
 
   def self.get_default_directory(type)
     case type
-    when "Mac"
+    when "Mac", "Mac_Arm"
       default = "~/Library/Application Support/Chromium"
     when "Linux_x64"
       default = "~/.config/autochrome"

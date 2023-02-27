@@ -32,7 +32,7 @@ class ChromeCache
 
   def self.new_from_type(type)
     case self.get_host(type)
-    when "Mac"
+    when "Mac", "Mac_Arm"
       MacChromeCache.new
     when "Linux_x64"
       XDGChromeCache.new

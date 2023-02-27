@@ -17,6 +17,7 @@ class AutoChrome::Fetcher
   TypeZipMap = {
     "Linux_x64" => "chrome-linux.zip",
     "Mac" => "chrome-mac.zip",
+    "Mac_Arm" => "chrome-mac.zip",
     "Win" => "chrome-win32.zip",
     "Win_x64" => "chrome-win32.zip",
   }
@@ -100,8 +101,14 @@ class AutoChrome::Fetcher
 
       case os
       when /darwin/
-        puts "[???] Detected OS X"
-        "Mac"
+        arch = %x( arch ) # Note: this will return x86 on M1 if the shell process was run in Rosetta
+        if /arm64/.match(arch)
+          puts "[???] Detected OS X (Apple Silicon)"
+          "Mac_Arm"
+        else
+          puts "[???] Detected OS X (Intel)"
+          "Mac"
+        end
       when /linux/
         # Chromium only runs on 64-bit Linux, check this.
         cpu = RbConfig::CONFIG['host_cpu']

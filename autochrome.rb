@@ -5,6 +5,18 @@ if RUBY_VERSION < '2.0'
   exit 1
 end
 
+if RUBY_VERSION >= '3.2.0' # monkeypatch exists/exist method names (https://bugs.ruby-lang.org/issues/17391)
+
+  class << File
+    alias_method :exists?, :exist?
+  end
+
+  class << Dir
+    alias_method :exists?, :exist?
+  end
+
+end
+
 require 'optparse'
 
 $: << File.join(File.dirname(__FILE__), 'lib')
