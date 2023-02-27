@@ -84,9 +84,20 @@ class AutoChrome
 
     def sign(key, value)
       message = uuid + key + serialize(value)
-      hmac = OpenSSL::HMAC.new(HMAC_KEY, OpenSSL::Digest::SHA256.new)
-      hmac << message
-      hmac.hexdigest.upcase
+
+      case @opts[:os_type]
+      when 'Mac', 'Mac_Arm'
+        hmac = OpenSSL::HMAC.new(HMAC_KEY, OpenSSL::Digest::SHA256.new)
+        hmac << message
+        hmac.hexdigest.upcase
+      when /^Linux/
+        digest = OpenSSL::Digest.new('SHA256')
+        hmac = OpenSSL::HMAC.new(message,digest)
+        hmac.hexdigest.upcase
+      else
+        raise "Missing or unexpected OS: #{@opts[:os_type].inspect}"
+      end
+
     end
 
 
