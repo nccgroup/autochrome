@@ -5,8 +5,7 @@ if RUBY_VERSION < '2.0'
   exit 1
 end
 
-if RUBY_VERSION >= '3.2.0'
-  STDERR.puts "Your version of ruby is >= 3.2.0, applying monkeypatch to File and Dir (see https://bugs.ruby-lang.org/issues/17391)"
+if RUBY_VERSION >= '3.2.0' # monkeypatch exists/exist method names (https://bugs.ruby-lang.org/issues/17391)
 
   class << File
     alias_method :exists?, :exist?
