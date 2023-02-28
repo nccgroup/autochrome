@@ -53,6 +53,7 @@ opts = [
   "--safebrowsing-disable-download-protection",
   "--proxy-server=#{@proxyhost}:#{@proxyport}",
   "--user-data-dir=#{@profiledir}",
+  "--disable-features=OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints",
 ]
 
 if Process.uid == 0
